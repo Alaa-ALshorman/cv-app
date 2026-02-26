@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'user_info_sheet.dart'; // تأكدي من استيراد ملف معلومات المستخدم
+import 'user_info_sheet.dart'; 
 
 class GlassScaffold extends StatelessWidget {
   final Widget child;
@@ -9,6 +9,8 @@ class GlassScaffold extends StatelessWidget {
   final VoidCallback onLanguageToggle;
   final bool showUserIcon;
   final Widget? bottomBar;
+  // --- الخطوة 1: أضفنا هذا السطر لاستقبال الزر العائم ---
+  final Widget? floatingActionButton; 
 
   const GlassScaffold({
     super.key,
@@ -19,11 +21,13 @@ class GlassScaffold extends StatelessWidget {
     required this.onLanguageToggle,
     this.showUserIcon = false,
     this.bottomBar,
+    // --- الخطوة 2: أضفناه هنا في الثوابت ---
+    this.floatingActionButton, 
   });
 
   @override
   Widget build(BuildContext context) {
-    // 1. باليت الألوان الملكية (Royal Green Palette)
+    // باليت الألوان الملكية (Royal Green Palette) الخاصة بكِ كما هي
     final Color dayBg = const Color(0xFFA5D6A7); 
     final Color nightBg = const Color(0xFF001A15);
 
@@ -33,26 +37,25 @@ class GlassScaffold extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: isDark ? nightBg : dayBg,
+      
+      // --- الخطوة 3: ربطنا الزر بالـ Scaffold الأصلي ---
+      floatingActionButton: floatingActionButton,
+
       body: SafeArea(
         child: Column(
           children: [
-            // الهيدر العلوي - الأيقونات
+            // الهيدر العلوي - الأيقونات كما صممتِها
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // زر الثيم
                   _headerIcon(
                     icon: isDark ? Icons.wb_sunny_rounded : Icons.nightlight_round,
                     onTap: onThemeToggle,
                     color: primaryGreen,
                   ),
-
-                  // أيقونة المستخدم (الآن أصبحت قابلة للضغط!)
                   if (showUserIcon) _simpleAvatar(primaryGreen, context),
-
-                  // زر اللغة
                   _headerIcon(
                     text: isAr ? "EN" : "AR",
                     onTap: onLanguageToggle,
@@ -62,15 +65,14 @@ class GlassScaffold extends StatelessWidget {
               ),
             ),
 
-            // المربع الرئيسي (شكل الحبة - Capsule Shape)
+            // المربع الرئيسي (شكل الحبة - Capsule Shape) - تصميمك الأصلي
             Expanded(
               child: Container(
                 width: double.infinity,
-                // المسافة (Margin) التي طلبناها ليفصل عن القائمة السفلية
                 margin: const EdgeInsets.fromLTRB(15, 5, 15, 20), 
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(55), // انحناء كامل وفخم
+                  borderRadius: BorderRadius.circular(55), 
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.12),
@@ -99,12 +101,10 @@ class GlassScaffold extends StatelessWidget {
           ],
         ),
       ),
-      // القائمة السفلية العائمة
       bottomNavigationBar: bottomBar, 
     );
   }
 
-  // دالة الأيقونات العلوية
   Widget _headerIcon({IconData? icon, String? text, required VoidCallback onTap, required Color color}) {
     return IconButton(
       onPressed: onTap,
@@ -114,11 +114,9 @@ class GlassScaffold extends StatelessWidget {
     );
   }
 
-  // دالة الأفاتار مع ميزة الضغط وفتح الصفحة الشخصية
   Widget _simpleAvatar(Color color, BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // فتح نافذة معلومات المستخدم (UserInfoSheet)
         showDialog(
           context: context,
           builder: (context) => UserInfoSheet(

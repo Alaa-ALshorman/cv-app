@@ -8,10 +8,10 @@ import 'screens/signup_screen.dart';
 import 'screens/home_screen.dart';
 
 void main() async {
-  // التأكد من تهيئة الإطارات البرمجية
+ 
   WidgetsFlutterBinding.ensureInitialized();
   
-  // تهيئة فايربيس
+ 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -29,20 +29,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // الحصول على الإعدادات من الـ Provider (اللغة والثيم)
+    
     final provider = Provider.of<AppProvider>(context);
 
     return MaterialApp(
       title: 'CV Builder',
       debugShowCheckedModeBanner: false,
       
-      // إعدادات الثيم (فاتح / غامق)
+     
       theme: provider.isDarkMode ? ThemeData.dark() : ThemeData.light(),
       
-      // تحديد الصفحة الأولى (شاشة تسجيل الدخول)
+      
       initialRoute: '/',
       
-      // تعريف المسارات (Routes) للتنقل بين الصفحات
+      
       routes: {
         '/': (context) => const LoginScreen(),
         '/signup': (context) => const SignUpScreen(),

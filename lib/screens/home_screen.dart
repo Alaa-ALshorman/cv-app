@@ -3,17 +3,17 @@ import 'package:provider/provider.dart';
 import '../app_provider.dart';
 import '../widgets/glass_scaffold.dart';
 import '../widgets/home_bottom_bar.dart';
-import '../widgets/home_tab.dart'; 
+import '../widgets/home_tab.dart';
 import '../widgets/cv_builder_content.dart';
-import '../widgets/personal_info_sheet.dart'; 
-import '../widgets/education_sheet.dart';
-import '../widgets/experience_sheet.dart';
+import '../widgets/personal_info_sheet.dart';
+import '../widgets/education_sheet.dart';    
+import '../widgets/experience_sheet.dart';   
 import '../widgets/skills_sheet.dart';
+import '../widgets/bio_sheet.dart'; 
 import 'templates_content.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -21,66 +21,69 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
+  void _showSheet(BuildContext context, Widget sheet) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => sheet,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    
-    // إعادة الألوان التي صممتِها: Cyan لليلي و Pink للنهاري
-    final Color primaryAccent = provider.isDarkMode ? const Color(0xFF00E5FF) : Colors.pinkAccent;
 
     return GlassScaffold(
       isDark: provider.isDarkMode,
       isAr: provider.isArabic,
-      showUserIcon: true,
-      // كبسات القائمة العلوية تعمل الآن مع الثيم الخاص بكِ
       onThemeToggle: () => provider.toggleTheme(),
       onLanguageToggle: () => provider.toggleLanguage(),
-      
       bottomBar: HomeBottomBar(
         currentIndex: _currentIndex,
         isDark: provider.isDarkMode,
         isAr: provider.isArabic,
         onTap: (index) => setState(() => _currentIndex = index),
       ),
-      
       child: IndexedStack(
         index: _currentIndex,
         children: [
-          const HomeTab(), 
-
+          HomeTab(onAddNew: () => setState(() => _currentIndex = 1)),
+          
+          
           CVBuilderContent(
-            isDark: provider.isDarkMode,
+            isDark: provider.isDarkMode, 
             isAr: provider.isArabic,
-            onPersonalInfoTap: () => _openSheet(
+            // 1. المعلومات الشخصية
+            onPersonalInfoTap: () => _showSheet(
               context, 
-              PersonalSheet(isDark: provider.isDarkMode, isAr: provider.isArabic) // تم تعديل الاسم ليطابق كودك
+              PersonalSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
+            ), 
+            // 2. النبذة المهنية
+            onBioTap: () => _showSheet(
+              context, 
+              BioSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
             ),
-            onEducationTap: () => _openSheet(
+            // 3. التعليم
+            onEducationTap: () => _showSheet(
               context, 
               EducationSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
             ),
-            onExperienceTap: () => _openSheet(
+            // 4. الخبرات
+            onExperienceTap: () => _showSheet(
               context, 
               ExperienceSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
             ),
-            onSkillsTap: () => _openSheet(
+            // 5. المهارات
+            onSkillsTap: () => _showSheet(
               context, 
               SkillsSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
             ),
           ),
-
+          
           TemplatesContent(isDark: provider.isDarkMode, isAr: provider.isArabic),
         ],
       ),
-    );
-  }
-
-  void _openSheet(BuildContext context, Widget sheet) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => sheet,
     );
   }
 }

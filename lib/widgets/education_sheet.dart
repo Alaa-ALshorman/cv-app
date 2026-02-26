@@ -20,6 +20,7 @@ class _EducationSheetState extends State<EducationSheet> {
   @override
   void initState() {
     super.initState();
+    // جلب البيانات الحالية من الـ Provider لتظهر عند فتح الشاشة
     final provider = Provider.of<AppProvider>(context, listen: false);
     _uniController = TextEditingController(text: provider.university);
     _degreeController = TextEditingController(text: provider.degree);
@@ -38,7 +39,6 @@ class _EducationSheetState extends State<EducationSheet> {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     
-    // الألوان الملكية المعتمدة
     final Color primaryGreen = widget.isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
     final Color accentGreen = widget.isDark ? const Color(0xFF004D40) : const Color(0xFFE8F5E9);
     final Color textColor = widget.isDark ? Colors.white : const Color(0xFF002B22);
@@ -49,7 +49,6 @@ class _EducationSheetState extends State<EducationSheet> {
         top: 20, left: 25, right: 25,
       ),
       decoration: BoxDecoration(
-        // استخدام نفس ألوان الكارد الأساسي
         color: widget.isDark ? const Color(0xFF002B22) : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(50)), 
       ),
@@ -57,21 +56,15 @@ class _EducationSheetState extends State<EducationSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // مقبض السحب بلون أخضر خفيف
             Container(width: 40, height: 4, decoration: BoxDecoration(color: primaryGreen.withOpacity(0.3), borderRadius: BorderRadius.circular(10))),
             const SizedBox(height: 25),
             
             Text(
               widget.isAr ? "المؤهلات العلمية" : "Education Detail",
-              style: TextStyle(
-                fontSize: 22, 
-                fontWeight: FontWeight.w900, // منع خطأ black
-                color: textColor
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textColor),
             ),
             const SizedBox(height: 30),
             
-            // الحقول بستايل أخضر ملكي
             _buildTextField(widget.isAr ? "الجامعة / المؤسسة" : "University / School", Icons.school_outlined, _uniController, primaryGreen, accentGreen, textColor),
             const SizedBox(height: 18),
             _buildTextField(widget.isAr ? "التخصص / الدرجة" : "Degree / Major", Icons.history_edu_outlined, _degreeController, primaryGreen, accentGreen, textColor),
@@ -80,7 +73,6 @@ class _EducationSheetState extends State<EducationSheet> {
             
             const SizedBox(height: 35),
             
-            // زر الحفظ بتصميم "الحبة" المنفصل
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryGreen,
@@ -90,9 +82,24 @@ class _EducationSheetState extends State<EducationSheet> {
                 elevation: 5,
                 shadowColor: primaryGreen.withOpacity(0.4),
               ),
-              onPressed: () async {
-                await provider.saveEducation(_uniController.text, _degreeController.text, _yearController.text);
-                if (mounted) Navigator.pop(context);
+              onPressed: () {
+                // تأكدي من إضافة هذه الدالة في ملف app_provider.dart
+                provider.updateEducation(
+                  _uniController.text, 
+                  _degreeController.text, 
+                  _yearController.text
+                );
+                
+                Navigator.pop(context);
+                
+                // تنبيه بسيط بنجاح الحفظ
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(widget.isAr ? "تم حفظ المؤهلات" : "Education saved"),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
               },
               child: Text(
                 widget.isAr ? "حفظ البيانات" : "Save Education",
@@ -116,7 +123,6 @@ class _EducationSheetState extends State<EducationSheet> {
         prefixIcon: Icon(icon, color: primary),
         filled: true,
         fillColor: bg,
-        // حواف مستديرة تتناسب مع شكل "الحبة"
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: primary, width: 1.5)),
       ),

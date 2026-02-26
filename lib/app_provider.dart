@@ -1,181 +1,207 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart'; //
-import 'package:firebase_storage/firebase_storage.dart'; //
 import 'dart:convert';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
+class CVModel {
+  String id;
+  String fullName;
+  String jobTitle;
+  String email;
+  String phone;
+  String bio;
+  String university;
+  String degree;
+  String gradYear;
+  String? profileImagePath;
+  String? templateId;
+  List<String> skills;
+  List<Map<String, String>> experiences;
+
+  CVModel({
+    required this.id,
+    this.fullName = "",
+    this.jobTitle = "",
+    this.email = "",
+    this.phone = "",
+    this.bio = "",
+    this.university = "",
+    this.degree = "",
+    this.gradYear = "",
+    this.profileImagePath,
+    this.templateId,
+    this.skills = const [],
+    this.experiences = const [],
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'fullName': fullName, 'jobTitle': jobTitle, 'email': email,
+    'phone': phone, 'bio': bio, 'university': university, 'degree': degree,
+    'gradYear': gradYear, 'profileImagePath': profileImagePath,
+    'templateId': templateId, 'skills': skills, 'experiences': experiences,
+  };
+
+  factory CVModel.fromJson(Map<String, dynamic> json) => CVModel(
+    id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+    fullName: json['fullName'] ?? "",
+    jobTitle: json['jobTitle'] ?? "",
+    email: json['email'] ?? "",
+    phone: json['phone'] ?? "",
+    bio: json['bio'] ?? "",
+    university: json['university'] ?? "",
+    degree: json['degree'] ?? "",
+    gradYear: json['gradYear'] ?? "",
+    profileImagePath: json['profileImagePath'],
+    templateId: json['templateId'],
+    skills: List<String>.from(json['skills'] ?? []),
+    experiences: (json['experiences'] as List?)?.map((e) => Map<String, String>.from(e)).toList() ?? [],
+  );
+}
 
 class AppProvider with ChangeNotifier {
-  // --- متغيرات Firebase (المصدر الأساسي للاسم والصورة حالياً) ---
-  String _userName = "User";
-  String? _userPhotoUrl;
-  bool _isUploading = false;
+  bool isDarkMode = true;
+  bool isArabic = true;
+  List<CVModel> allCVs = [];
+  int currentCVIndex = -1;
 
-  // --- ميزاتك القديمة (مخزنة محلياً) ---
-  bool _isDarkMode = true;
-  bool _isArabic = true;
-  String _fullName = "";
-  String _jobTitle = "";
-  String _email = "";
-  String _phone = "";
-  String? _profileImagePath; 
-  String _university = "";
-  String _degree = "";
-  String _gradYear = "";
-  List<Map<String, String>> _experiences = [];
-  String _bio = ""; 
-  List<String> _skills = []; 
-
-  // --- Getters ---
-  String get userName => _userName;
-  String? get userPhotoUrl => _userPhotoUrl;
-  bool get isUploading => _isUploading;
   
-  bool get isDarkMode => _isDarkMode;
-  bool get isArabic => _isArabic;
-  String get fullName => _fullName;
-  String get jobTitle => _jobTitle;
-  String get email => _email;
-  String get phone => _phone;
-  String? get profileImagePath => _profileImagePath;
-  String get university => _university;
-  String get degree => _degree;
-  String get gradYear => _gradYear;
-  List<Map<String, String>> get experiences => _experiences;
-  String get bio => _bio;
-  List<String> get skills => _skills;
+  CVModel? get currentCV => currentCVIndex != -1 && currentCVIndex < allCVs.length ? allCVs[currentCVIndex] : null;
 
-  AppProvider() { 
-    _loadData(); 
-    fetchFirebaseUserData(); // جلب البيانات عند تشغيل التطبيق
-  }
+  
+  String get userName => fullName.isNotEmpty ? fullName : (isArabic ? "مستخدم جديد" : "New User");
+  String? get profileImagePath => currentCV?.profileImagePath;
 
-  // --- 1. دالة جلب البيانات من Firebase وتحديث الواجهة ---
+ 
+  String get fullName => currentCV?.fullName ?? "";
+  String get jobTitle => currentCV?.jobTitle ?? "";
+  String get email => currentCV?.email ?? "";
+  String get phone => currentCV?.phone ?? "";
+  String get bio => currentCV?.bio ?? "";
+  String get university => currentCV?.university ?? "";
+  String get degree => currentCV?.degree ?? "";
+  String get gradYear => currentCV?.gradYear ?? "";
+  List<String> get skills => currentCV?.skills ?? [];
+  List<Map<String, String>> get experiences => currentCV?.experiences ?? [];
+
+  AppProvider() { _loadData(); }
+
+  
   void fetchFirebaseUserData() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      _userName = user.displayName ?? "User"; // تحديث المتغير المحلي
-      _userPhotoUrl = user.photoURL;
-      notifyListeners(); // إشعار الهوم بالتغيير
-    }
-  }
-
-  // --- 2. دالة حفظ البيانات الشخصية (تحدث Firebase + المحلي) ---
-  Future<void> savePersonalInfo(String n, String j, String e, String p) async {
-    _fullName = n; 
-    _jobTitle = j; 
-    _email = e; 
-    _phone = p;
-    
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      // تحديث الاسم في سحابة Firebase
-      await user.updateDisplayName(n);
-      await user.reload();
-      
-      // مزامنة الاسم المحلي فوراً ليظهر في الهوم
-      _userName = FirebaseAuth.instance.currentUser?.displayName ?? n;
-    }
-
-    await _saveToPrefs(); 
-    notifyListeners(); // هذا هو السطر اللي بيغير "User" لاسمك الحقيقي فوراً
-  }
-
-  // --- 3. دالة رفع الصورة لـ Firebase Storage ---
-  Future<void> uploadUserImage(File imageFile) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    _isUploading = true;
+   
     notifyListeners();
+  }
 
-    try {
-      final storageRef = FirebaseStorage.instance
-          .ref()
-          .child('user_profiles')
-          .child('${user.uid}.jpg');
-
-      await storageRef.putFile(imageFile);
-      final downloadUrl = await storageRef.getDownloadURL();
-      
-      await user.updatePhotoURL(downloadUrl);
-      await user.reload();
-
-      _userPhotoUrl = downloadUrl;
-    } catch (e) {
-      debugPrint("Upload Error: $e");
-    } finally {
-      _isUploading = false;
-      notifyListeners();
+  void saveSelectedTemplate(String tId) {
+    
+    if (currentCV != null) {
+      currentCV!.templateId = tId;
+      _saveAndNotify();
     }
   }
 
-  // --- بقية الدوال الأصلية الخاصة بك ---
-  void toggleTheme() { _isDarkMode = !_isDarkMode; _saveToPrefs(); notifyListeners(); }
-  void toggleLanguage() { _isArabic = !_isArabic; _saveToPrefs(); notifyListeners(); }
-  void saveBio(String text) { _bio = text; _saveToPrefs(); notifyListeners(); }
   
-  void addSkill(String skill) {
-    if (skill.isNotEmpty && !_skills.contains(skill)) {
-      _skills.add(skill); _saveToPrefs(); notifyListeners();
-    }
-  }
-  
-  void removeSkill(int index) { _skills.removeAt(index); _saveToPrefs(); notifyListeners(); }
-  
-  void deleteExperience(int index) {
-    if (index >= 0 && index < _experiences.length) {
-      _experiences.removeAt(index); _saveToPrefs(); notifyListeners();
-    }
+  void updatePersonalInfo(String name, String job, String mail, String ph) {
+    if (currentCV == null) createNewCV();
+    currentCV!.fullName = name;
+    currentCV!.jobTitle = job;
+    currentCV!.email = mail;
+    currentCV!.phone = ph;
+    _saveAndNotify();
   }
 
-  Future<void> pickProfileImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) { 
-      _profileImagePath = image.path; 
-      await uploadUserImage(File(image.path)); 
-      await _saveToPrefs(); 
-      notifyListeners(); 
+  void updateBio(String newBio) {
+    if (currentCV != null) {
+      currentCV!.bio = newBio;
+      _saveAndNotify();
     }
   }
 
-  Future<void> saveEducation(String uni, String deg, String year) async {
-    _university = uni; _degree = deg; _gradYear = year;
-    await _saveToPrefs(); notifyListeners();
+  void updateEducation(String uni, String deg, String year) {
+    if (currentCV != null) {
+      currentCV!.university = uni;
+      currentCV!.degree = deg;
+      currentCV!.gradYear = year;
+      _saveAndNotify();
+    }
   }
 
+ 
   void addExperience(String comp, String pos, String dur) {
-    _experiences.add({'company': comp, 'position': pos, 'duration': dur});
-    _saveToPrefs(); notifyListeners();
+    if (currentCV != null) {
+      currentCV!.experiences.add({'company': comp, 'position': pos, 'duration': dur});
+      _saveAndNotify();
+    }
   }
 
-  // --- الحفظ والتحميل من الذاكرة المحلية (SharedPreferences) ---
+  void deleteExperience(int index) {
+    if (currentCV != null) {
+      currentCV!.experiences.removeAt(index);
+      _saveAndNotify();
+    }
+  }
+
+
+  void addSkill(String skill) {
+    if (currentCV != null) {
+      currentCV!.skills.add(skill);
+      _saveAndNotify();
+    }
+  }
+
+  void deleteSkill(int index) {
+    if (currentCV != null) {
+      currentCV!.skills.removeAt(index);
+      _saveAndNotify();
+    }
+  }
+
+  void createNewCV() {
+    allCVs.add(CVModel(id: DateTime.now().millisecondsSinceEpoch.toString()));
+    currentCVIndex = allCVs.length - 1;
+    _saveAndNotify();
+  }
+
+  void deleteCV(int index) {
+    if (index >= 0 && index < allCVs.length) {
+      allCVs.removeAt(index);
+      if (currentCVIndex >= allCVs.length) currentCVIndex = allCVs.length - 1;
+      _saveAndNotify();
+    }
+  }
+
+ 
+  set currentCVIndexSet(int index) {
+    currentCVIndex = index;
+    notifyListeners();
+  }
+
+  
+  Future<void> pickProfileImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null && currentCV != null) {
+      currentCV!.profileImagePath = pickedFile.path;
+      _saveAndNotify();
+    }
+  }
+
+  void toggleTheme() { isDarkMode = !isDarkMode; notifyListeners(); }
+  void toggleLanguage() { isArabic = !isArabic; notifyListeners(); }
+
+  void _saveAndNotify() { _saveToPrefs(); notifyListeners(); }
+
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isDark', _isDarkMode);
-    await prefs.setBool('isAr', _isArabic);
-    await prefs.setString('full_name', _fullName);
-    await prefs.setString('bio', _bio);
-    await prefs.setStringList('skills_list', _skills);
-    await prefs.setString('profile_image', _profileImagePath ?? "");
-    await prefs.setString('exp_list', json.encode(_experiences));
+    prefs.setString('all_cvs_v2', json.encode(allCVs.map((e) => e.toJson()).toList()));
   }
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool('isDark') ?? true;
-    _isArabic = prefs.getBool('isAr') ?? true;
-    _fullName = prefs.getString('full_name') ?? "";
-    _bio = prefs.getString('bio') ?? "";
-    _skills = prefs.getStringList('skills_list') ?? [];
-    _profileImagePath = prefs.getString('profile_image');
-    if (_profileImagePath == "") _profileImagePath = null;
-    String? data = prefs.getString('exp_list');
-    if (data != null && data.isNotEmpty) {
-      _experiences = List<Map<String, String>>.from(json.decode(data));
+    String? data = prefs.getString('all_cvs_v2');
+    if (data != null) {
+      allCVs = (json.decode(data) as List).map((e) => CVModel.fromJson(e)).toList();
+      if (allCVs.isNotEmpty && currentCVIndex == -1) currentCVIndex = 0;
+      notifyListeners();
     }
-    notifyListeners();
   }
 }

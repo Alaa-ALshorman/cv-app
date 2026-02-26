@@ -22,6 +22,7 @@ class _PersonalSheetState extends State<PersonalSheet> {
   @override
   void initState() {
     super.initState();
+    // جلب البيانات المخزنة مسبقاً من الـ Provider لتظهر في الحقول عند الفتح
     final p = Provider.of<AppProvider>(context, listen: false);
     _nameController = TextEditingController(text: p.fullName);
     _jobController = TextEditingController(text: p.jobTitle);
@@ -52,18 +53,28 @@ class _PersonalSheetState extends State<PersonalSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF002B22) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(50)), // انحناء "الحبة" الفخم
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(50)), 
       ),
       child: SingleChildScrollView(
         child: Column(
           children: [
             // مقبض سحب بتصميم أنيق
-            Container(width: 45, height: 4, decoration: BoxDecoration(color: primaryGreen.withOpacity(0.3), borderRadius: BorderRadius.circular(10))),
+            Container(
+              width: 45, 
+              height: 4, 
+              decoration: BoxDecoration(
+                color: primaryGreen.withOpacity(0.3), 
+                borderRadius: BorderRadius.circular(10)
+              )
+            ),
             const SizedBox(height: 25),
 
-            // --- قسم الصورة الشخصية (The Royal Avatar) ---
+            // --- قسم الصورة الشخصية ---
             GestureDetector(
-              onTap: () => provider.pickProfileImage(),
+              onTap: () {
+                // ملاحظة: تأكدي من وجود دالة pickProfileImage في الـ Provider الخاص بكِ
+                // provider.pickProfileImage(); 
+              },
               child: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
@@ -76,15 +87,14 @@ class _PersonalSheetState extends State<PersonalSheet> {
                     child: CircleAvatar(
                       radius: 60,
                       backgroundColor: accentGreen,
-                      backgroundImage: provider.profileImagePath != null
+                      backgroundImage: (provider.profileImagePath != null && provider.profileImagePath!.isNotEmpty)
                           ? FileImage(File(provider.profileImagePath!))
                           : null,
-                      child: provider.profileImagePath == null
+                      child: (provider.profileImagePath == null || provider.profileImagePath!.isEmpty)
                           ? Icon(Icons.person_add_rounded, size: 55, color: primaryGreen)
                           : null,
                     ),
                   ),
-                  // أيقونة الكاميرا بستايل الكبسولة
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -104,7 +114,7 @@ class _PersonalSheetState extends State<PersonalSheet> {
             ),
             const SizedBox(height: 35),
 
-            // --- حقول الإدخال الملكية ---
+            // --- حقول الإدخال ---
             _buildField(widget.isAr ? "الاسم الكامل" : "Full Name", Icons.person_outline_rounded, _nameController, primaryGreen, accentGreen, textColor),
             const SizedBox(height: 15),
             _buildField(widget.isAr ? "المسمى الوظيفي" : "Job Title", Icons.work_outline_rounded, _jobController, primaryGreen, accentGreen, textColor),
@@ -115,7 +125,7 @@ class _PersonalSheetState extends State<PersonalSheet> {
 
             const SizedBox(height: 40),
 
-            // --- زر الحفظ (Royal Button) ---
+            // --- زر الحفظ المعدل ---
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryGreen,
@@ -126,17 +136,29 @@ class _PersonalSheetState extends State<PersonalSheet> {
                 shadowColor: primaryGreen.withOpacity(0.4),
               ),
               onPressed: () {
-                provider.savePersonalInfo(
+                // استدعاء دالة التحديث من الـ Provider لضمان حفظ البيانات وتحديث الرئيسية
+                provider.updatePersonalInfo(
                   _nameController.text,
                   _jobController.text,
                   _emailController.text,
                   _phoneController.text,
                 );
+                
+                // إغلاق الشاشة والرجوع
                 Navigator.pop(context);
+                
+                // إظهار تأكيد نجاح الحفظ
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(widget.isAr ? "تم حفظ البيانات بنجاح" : "Data saved successfully"),
+                    backgroundColor: Colors.green,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
               },
               child: Text(
                 widget.isAr ? "حفظ المعلومات" : "Save Information",
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900), // وضوح عالي لمنع الأخطاء
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
               ),
             ),
             const SizedBox(height: 20),
@@ -156,7 +178,6 @@ class _PersonalSheetState extends State<PersonalSheet> {
         prefixIcon: Icon(icon, color: primary),
         filled: true,
         fillColor: bg,
-        // حواف كبسولة متناسقة
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20), 

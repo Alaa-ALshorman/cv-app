@@ -17,7 +17,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  // 1. وظيفة تسجيل الدخول
+  
+  final Color primaryGreen = const Color(0xFF1B5E20); 
+  final Color accentGreen = const Color(0xFFE8F5E9);
+
   Future<void> _handleLogin() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
@@ -40,7 +43,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // 2. وظيفة استعادة كلمة المرور (Forgot Password)
   Future<void> _resetPassword() async {
     String email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -57,91 +59,148 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: primaryGreen,
+      content: Text(message, style: const TextStyle(color: Colors.white)),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     final bool isAr = provider.isArabic;
+    final bool isDark = provider.isDarkMode;
+
+    final Color textColor = isDark ? Colors.white : const Color(0xFF002B22);
+    final Color fieldColor = isDark ? Colors.white.withOpacity(0.1) : accentGreen;
 
     return GlassScaffold(
-      isDark: provider.isDarkMode,
+      isDark: isDark,
       isAr: isAr,
       onThemeToggle: () => provider.toggleTheme(),
       onLanguageToggle: () => provider.toggleLanguage(),
       showUserIcon: false,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            isAr ? "تسجيل الدخول" : "Login",
-            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 40),
-          
-          _buildTextField(_emailController, isAr ? "البريد الإلكتروني" : "Email", Icons.email),
-          const SizedBox(height: 20),
-          
-          _buildTextField(_passwordController, isAr ? "كلمة المرور" : "Password", Icons.lock, isObscure: true),
-          
-          // زر نسيت كلمة المرور
-          Align(
-            alignment: isAr ? Alignment.centerRight : Alignment.centerLeft,
-            child: TextButton(
-              onPressed: _resetPassword,
-              child: Text(
-                isAr ? "نسيت كلمة المرور؟" : "Forgot Password?",
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            
+            Icon(Icons.lock_person_rounded, size: 80, color: isDark ? const Color(0xFF00E676) : primaryGreen),
+            const SizedBox(height: 20),
+            
+            Text(
+              isAr ? "تسجيل الدخول" : "Login",
+              style: TextStyle(
+                color: textColor, 
+                fontSize: 30, 
+                fontWeight: FontWeight.w900, 
+                letterSpacing: 1.2
               ),
             ),
-          ),
-
-          const SizedBox(height: 10),
-
-          _isLoading 
-            ? const CircularProgressIndicator(color: Colors.white)
-            : ElevatedButton(
-                onPressed: _handleLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink,
-                  minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            const SizedBox(height: 10),
+            Text(
+              isAr ? "مرحباً بك في صانع السيرة الذاتية الملكي" : "Welcome to Royal CV Maker",
+              style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+            ),
+            const SizedBox(height: 40),
+            
+            _buildTextField(
+              _emailController, 
+              isAr ? "البريد الإلكتروني" : "Email", 
+              Icons.alternate_email_rounded, 
+              fieldColor, 
+              textColor, 
+              isDark ? const Color(0xFF00E676) : primaryGreen
+            ),
+            const SizedBox(height: 20),
+            
+            _buildTextField(
+              _passwordController, 
+              isAr ? "كلمة المرور" : "Password", 
+              Icons.lock_outline_rounded, 
+              fieldColor, 
+              textColor, 
+              isDark ? const Color(0xFF00E676) : primaryGreen,
+              isObscure: true
+            ),
+            
+            Align(
+              alignment: isAr ? Alignment.centerRight : Alignment.centerLeft,
+              child: TextButton(
+                onPressed: _resetPassword,
+                child: Text(
+                  isAr ? "نسيت كلمة المرور؟" : "Forgot Password?",
+                  style: TextStyle(color: isDark ? Colors.white70 : primaryGreen, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
-                child: Text(isAr ? "دخول" : "Login", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
-          
-          const SizedBox(height: 20),
-          
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SignUpScreen()),
-              );
-            },
-            child: Text(
-              isAr ? "ليس لديك حساب؟ سجل الآن" : "Don't have an account? Sign Up",
-              style: const TextStyle(color: Colors.white70),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 20),
+
+            _isLoading 
+              ? CircularProgressIndicator(color: isDark ? const Color(0xFF00E676) : primaryGreen)
+              : ElevatedButton(
+                  onPressed: _handleLogin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark ? const Color(0xFF00E676) : primaryGreen,
+                    foregroundColor: isDark ? Colors.black : Colors.white,
+                    minimumSize: const Size(double.infinity, 60),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    elevation: 8,
+                    shadowColor: primaryGreen.withOpacity(0.5),
+                  ),
+                  child: Text(
+                    isAr ? "دخول ملكي" : "Royal Login", 
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                  ),
+                ),
+            
+            const SizedBox(height: 25),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(isAr ? "ليس لديك حساب؟ " : "Don't have an account? ", style: TextStyle(color: textColor.withOpacity(0.8))),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                    );
+                  },
+                  child: Text(
+                    isAr ? "سجل الآن" : "Sign Up",
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFF00E676) : primaryGreen, 
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {bool isObscure = false}) {
+  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, Color bg, Color text, Color primary, {bool isObscure = false}) {
     return TextField(
       controller: controller,
       obscureText: isObscure,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: text, fontWeight: FontWeight.w600),
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Colors.white70),
+        prefixIcon: Icon(icon, color: primary),
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white54),
+        hintStyle: TextStyle(color: text.withOpacity(0.4)),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.1),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+        fillColor: bg,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20), 
+          borderSide: BorderSide(color: primary, width: 1.5)
+        ),
       ),
     );
   }
