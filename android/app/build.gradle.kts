@@ -34,9 +34,9 @@ android {
         create("release") {
             // تأكد أن ملف upload-keystore.jks موجود فعلياً في مجلد android/app
             storeFile = file("upload-keystore.jks") 
-            storePassword = "alaa123459" 
+            storePassword = "alaa1234" 
             keyAlias = "upload"
-            keyPassword = "alaa123459"
+            keyPassword = "alaa1234"
         }
     }
 
