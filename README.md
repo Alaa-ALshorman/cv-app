@@ -1,16 +1,74 @@
-# cv_app
+# CV App
 
-A new Flutter project.
+A Flutter application for creating and displaying a professional CV.
+This project allows users to organize their personal information, skills, education, and experience in a clear and structured format.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+* Display personal information
+* Show education and work experience
+* List technical and soft skills
+* Organized CV sections
+* Responsive user interface
 
-A few resources to get you started if this is your first Flutter project:
+## Technologies Used
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+* Flutter
+* Dart
+* Material Design
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Project Structure
+
+```
+cv-app
+│
+├── lib
+│   ├── screens
+│   ├── widgets
+│   ├── models
+│
+├── pubspec.yaml
+└── README.md
+```
+
+## Installation and Run
+
+1. Clone the repository
+
+```
+git clone https://github.com/Alaa-ALshorman/cv-app.git
+```
+
+2. Navigate to the project folder
+
+```
+cd cv-app
+```
+
+3. Get dependencies
+
+```
+flutter pub get
+```
+
+4. Run the application
+
+```
+flutter run
+```
+
+## Screenshots
+
+Add screenshots of the application here.
+
+## Future Improvements
+
+* Export CV as PDF
+* Dark mode
+* Multi-language support
+
+## Author
+
+Alaa Alshorman
+
+GitHub: https://github.com/Alaa-ALshorman

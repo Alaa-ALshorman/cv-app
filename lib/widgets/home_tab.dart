@@ -24,7 +24,7 @@ class HomeTab extends StatelessWidget {
               Text(
                 isAr ? "أهلاً بك، ${provider.userName} 👋" : "Welcome, ${provider.userName} 👋",
                 style: TextStyle(
-                  fontSize: 24, 
+                  fontSize: 20, 
                   fontWeight: FontWeight.w900, 
                   color: isDark ? Colors.white : primaryGreen
                 ),
@@ -37,7 +37,7 @@ class HomeTab extends StatelessWidget {
                     ? (isAr ? "ابدأ بإنشاء سيرتك الأولى الآن" : "Start creating your first CV now")
                     : (isAr ? "سيرك الذاتية المحفوظة:" : "Your saved CVs:"),
                 style: TextStyle(
-                  fontSize: 16, 
+                  fontSize: 14, 
                   fontWeight: FontWeight.w600, 
                   color: isDark ? Colors.white70 : Colors.black54
                 ),

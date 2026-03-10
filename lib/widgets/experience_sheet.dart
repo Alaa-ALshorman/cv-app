@@ -13,7 +13,6 @@ class ExperienceSheet extends StatefulWidget {
 }
 
 class _ExperienceSheetState extends State<ExperienceSheet> {
-  // تعريف وحدات التحكم في النصوص
   final _compController = TextEditingController();
   final _posController = TextEditingController();
   final _durController = TextEditingController();
@@ -28,25 +27,21 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // الاتصال بالـ Provider
-    final provider = Provider.of<AppProvider>(context);
-    
-    // الألوان الملكية الموحدة للتصميم
+    // الألوان
     final Color primaryGreen = widget.isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
     final Color accentGreen = widget.isDark ? const Color(0xFF004D40) : const Color(0xFFE8F5E9);
     final Color textColor = widget.isDark ? Colors.white : const Color(0xFF002B22);
 
     return Container(
-      // تحديد ارتفاع مناسب للشاشة
       height: MediaQuery.of(context).size.height * 0.85,
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
       decoration: BoxDecoration(
         color: widget.isDark ? const Color(0xFF002B22) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(50)), // تصميم الحبة
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(50)),
       ),
       child: Column(
         children: [
-          // مقبض سحب علوي للتزيين
+          // مقبض السحب
           Container(
             width: 45, 
             height: 4, 
@@ -59,20 +54,15 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
           
           Text(
             widget.isAr ? "الخبرات العملية" : "Work Experiences",
-            style: TextStyle(
-              fontSize: 22, 
-              fontWeight: FontWeight.w900, 
-              color: textColor
-            ),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textColor),
           ),
           const SizedBox(height: 30),
           
-          // حقول الإدخال
           _buildTextField(widget.isAr ? "الشركة" : "Company", Icons.business_rounded, _compController, primaryGreen, accentGreen, textColor),
           const SizedBox(height: 15),
           _buildTextField(widget.isAr ? "المسمى الوظيفي" : "Job Position", Icons.badge_rounded, _posController, primaryGreen, accentGreen, textColor),
           const SizedBox(height: 15),
-          _buildTextField(widget.isAr ? "المدة (مثلاً: 2020 - 2022)" : "Duration (e.g., 2020 - 2022)", Icons.timer_rounded, _durController, primaryGreen, accentGreen, textColor),
+          _buildTextField(widget.isAr ? "المدة" : "Duration", Icons.timer_rounded, _durController, primaryGreen, accentGreen, textColor),
           
           const SizedBox(height: 25),
           
@@ -84,22 +74,25 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
               minimumSize: const Size(double.infinity, 60),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
               elevation: 4,
-              shadowColor: primaryGreen.withOpacity(0.4),
             ),
             onPressed: () {
-              // التحقق من أن حقل الشركة ليس فارغاً على الأقل
               if (_compController.text.isNotEmpty) {
+                // نستخدم listen: false هنا لأننا داخل دالة onPressed
+                final provider = Provider.of<AppProvider>(context, listen: false);
+                
                 provider.addExperience(
                   _compController.text, 
                   _posController.text, 
                   _durController.text
                 );
-                // مسح الحقول بعد الإضافة لتسهيل إضافة خبرة أخرى
-                _compController.clear(); 
-                _posController.clear(); 
-                _durController.clear();
                 
-                // إخفاء الكيبورد بعد الإضافة
+                // تفريغ الحقول وتحديث الواجهة المحلية
+                setState(() {
+                  _compController.clear(); 
+                  _posController.clear(); 
+                  _durController.clear();
+                });
+                
                 FocusScope.of(context).unfocus();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -117,16 +110,20 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
           Divider(color: primaryGreen.withOpacity(0.1), thickness: 1.5),
           const SizedBox(height: 15),
           
-          // قائمة الخبرات المضافة
+          // --- التعديل الجوهري هنا باستخدام Consumer ---
           Expanded(
-            child: provider.experiences.isEmpty 
-              ? Center(
-                  child: Text(
-                    widget.isAr ? "لم تضف أي خبرات بعد" : "No experiences added yet",
-                    style: TextStyle(color: textColor.withOpacity(0.5)),
-                  ),
-                )
-              : ListView.builder(
+            child: Consumer<AppProvider>(
+              builder: (context, provider, child) {
+                if (provider.experiences.isEmpty) {
+                  return Center(
+                    child: Text(
+                      widget.isAr ? "لم تضف أي خبرات بعد" : "No experiences added yet",
+                      style: TextStyle(color: textColor.withOpacity(0.5)),
+                    ),
+                  );
+                }
+                
+                return ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   itemCount: provider.experiences.length,
                   itemBuilder: (context, index) {
@@ -140,13 +137,9 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                        leading: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: primaryGreen.withOpacity(0.15), 
-                            shape: BoxShape.circle
-                          ),
-                          child: Icon(Icons.work_outline_rounded, color: primaryGreen, size: 24),
+                        leading: CircleAvatar(
+                          backgroundColor: primaryGreen.withOpacity(0.15),
+                          child: Icon(Icons.work_outline_rounded, color: primaryGreen),
                         ),
                         title: Text(
                           exp['company'] ?? "", 
@@ -154,28 +147,28 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
                         ),
                         subtitle: Text(
                           "${exp['position'] ?? ''} | ${exp['duration'] ?? ''}",
-                          style: TextStyle(
-                            color: textColor.withOpacity(0.7), 
-                            fontSize: 13, 
-                            fontWeight: FontWeight.w500
-                          ),
+                          style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 13),
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent),
-                          onPressed: () => provider.deleteExperience(index),
+                          onPressed: () {
+                            provider.deleteExperience(index);
+                            // الـ Consumer سيتكفل بتحديث الشاشة هنا تلقائياً
+                          },
                         ),
                       ),
                     );
                   },
-                ),
+                );
+              },
+            ),
           ),
           
-          // زر نهائي لإغلاق الشاشة بعد الانتهاء
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               widget.isAr ? "تم" : "Done",
-              style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold),
+              style: TextStyle(color: primaryGreen, fontWeight: FontWeight.bold, fontSize: 18),
             ),
           ),
         ],
@@ -183,7 +176,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
     );
   }
 
-  // ودجت بناء حقل النص الموحد
   Widget _buildTextField(String label, IconData icon, TextEditingController controller, Color primary, Color bg, Color text) {
     return TextField(
       controller: controller,
@@ -194,14 +186,8 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
         prefixIcon: Icon(icon, color: primary),
         filled: true,
         fillColor: bg,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20), 
-          borderSide: BorderSide.none
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20), 
-          borderSide: BorderSide(color: primary, width: 1.5)
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: primary, width: 1.5)),
       ),
     );
   }

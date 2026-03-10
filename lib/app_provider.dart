@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+// موديل البيانات - CV Model
 class CVModel {
   String id;
+  String userId;
   String fullName;
   String jobTitle;
   String email;
@@ -20,6 +23,7 @@ class CVModel {
 
   CVModel({
     required this.id,
+    this.userId = "",
     this.fullName = "",
     this.jobTitle = "",
     this.email = "",
@@ -35,43 +39,68 @@ class CVModel {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id, 'fullName': fullName, 'jobTitle': jobTitle, 'email': email,
-    'phone': phone, 'bio': bio, 'university': university, 'degree': degree,
-    'gradYear': gradYear, 'profileImagePath': profileImagePath,
-    'templateId': templateId, 'skills': skills, 'experiences': experiences,
-  };
+        'id': id,
+        'userId': userId,
+        'fullName': fullName,
+        'jobTitle': jobTitle,
+        'email': email,
+        'phone': phone,
+        'bio': bio,
+        'university': university,
+        'degree': degree,
+        'gradYear': gradYear,
+        'profileImagePath': profileImagePath,
+        'templateId': templateId,
+        'skills': skills,
+        'experiences': experiences,
+      };
 
   factory CVModel.fromJson(Map<String, dynamic> json) => CVModel(
-    id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-    fullName: json['fullName'] ?? "",
-    jobTitle: json['jobTitle'] ?? "",
-    email: json['email'] ?? "",
-    phone: json['phone'] ?? "",
-    bio: json['bio'] ?? "",
-    university: json['university'] ?? "",
-    degree: json['degree'] ?? "",
-    gradYear: json['gradYear'] ?? "",
-    profileImagePath: json['profileImagePath'],
-    templateId: json['templateId'],
-    skills: List<String>.from(json['skills'] ?? []),
-    experiences: (json['experiences'] as List?)?.map((e) => Map<String, String>.from(e)).toList() ?? [],
-  );
+        id: json['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: json['userId'] ?? "",
+        fullName: json['fullName'] ?? "",
+        jobTitle: json['jobTitle'] ?? "",
+        email: json['email'] ?? "",
+        phone: json['phone'] ?? "",
+        bio: json['bio'] ?? "",
+        university: json['university'] ?? "",
+        degree: json['degree'] ?? "",
+        gradYear: json['gradYear'] ?? "",
+        profileImagePath: json['profileImagePath'],
+        templateId: json['templateId'],
+        skills: List<String>.from(json['skills'] ?? []),
+        experiences: (json['experiences'] as List?)
+                ?.map((e) => Map<String, String>.from(e))
+                .toList() ??
+            [],
+      );
 }
 
 class AppProvider with ChangeNotifier {
   bool isDarkMode = true;
   bool isArabic = true;
-  List<CVModel> allCVs = [];
+  List<CVModel> _allCVs = []; 
   int currentCVIndex = -1;
+  String _signUpName = "";
 
-  
-  CVModel? get currentCV => currentCVIndex != -1 && currentCVIndex < allCVs.length ? allCVs[currentCVIndex] : null;
+  List<CVModel> get allCVs {
+    String currentUid = FirebaseAuth.instance.currentUser?.uid ?? "";
+    return _allCVs.where((cv) => cv.userId == currentUid).toList();
+  }
 
+  CVModel? get currentCV {
+    if (currentCVIndex != -1 && currentCVIndex < allCVs.length) {
+      return allCVs[currentCVIndex];
+    }
+    return null;
+  }
+
+  // Getters للواجهة
+  String get userName => _signUpName.isNotEmpty ? _signUpName : (fullName.isNotEmpty ? fullName : (isArabic ? "مستخدم جديد" : "New User"));
   
-  String get userName => fullName.isNotEmpty ? fullName : (isArabic ? "مستخدم جديد" : "New User");
+  // تحسين getter الصورة لضمان عدم حدوث خطأ null في القوالب
   String? get profileImagePath => currentCV?.profileImagePath;
 
- 
   String get fullName => currentCV?.fullName ?? "";
   String get jobTitle => currentCV?.jobTitle ?? "";
   String get email => currentCV?.email ?? "";
@@ -85,97 +114,117 @@ class AppProvider with ChangeNotifier {
 
   AppProvider() { _loadData(); }
 
-  
-  void fetchFirebaseUserData() {
-   
-    notifyListeners();
-  }
+  void fetchFirebaseUserData() { notifyListeners(); }
 
-  void saveSelectedTemplate(String tId) {
-    
-    if (currentCV != null) {
-      currentCV!.templateId = tId;
-      _saveAndNotify();
+  // دالة الحفظ النهائي والتصفير
+  void saveAndResetForNextCV() {
+    if (currentCVIndex != -1) {
+      _saveToPrefs(); 
+      currentCVIndex = -1; 
+      notifyListeners(); 
     }
   }
 
-  
+  void createNewCV() {
+    // التحقق من أننا لسنا في وضع تعديل سيرة موجودة أصلاً
+    if (currentCVIndex == -1) {
+      String currentUid = FirebaseAuth.instance.currentUser?.uid ?? "guest";
+      CVModel newCV = CVModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: currentUid,
+      );
+      
+      _allCVs.add(newCV);
+      // ضبط المؤشر على آخر عنصر تمت إضافته في القائمة الأصلية
+      currentCVIndex = _allCVs.length - 1; 
+      
+      _saveToPrefs();
+      // لا نضع notifyListeners هنا لتجنب إعادة بناء الواجهة أثناء الكتابة
+    }
+  }
+
   void updatePersonalInfo(String name, String job, String mail, String ph) {
-    if (currentCV == null) createNewCV();
-    currentCV!.fullName = name;
-    currentCV!.jobTitle = job;
-    currentCV!.email = mail;
-    currentCV!.phone = ph;
-    _saveAndNotify();
-  }
-
-  void updateBio(String newBio) {
+    if (currentCVIndex == -1) createNewCV();
     if (currentCV != null) {
-      currentCV!.bio = newBio;
+      currentCV!.fullName = name;
+      currentCV!.jobTitle = job;
+      currentCV!.email = mail;
+      currentCV!.phone = ph;
       _saveAndNotify();
     }
   }
 
-  void updateEducation(String uni, String deg, String year) {
+  void addExperience(String company, String position, String duration) {
+    if (currentCVIndex == -1) createNewCV();
     if (currentCV != null) {
-      currentCV!.university = uni;
-      currentCV!.degree = deg;
-      currentCV!.gradYear = year;
-      _saveAndNotify();
-    }
-  }
-
- 
-  void addExperience(String comp, String pos, String dur) {
-    if (currentCV != null) {
-      currentCV!.experiences.add({'company': comp, 'position': pos, 'duration': dur});
+      currentCV!.experiences = List.from(currentCV!.experiences)..add({
+        'company': company,
+        'position': position,
+        'duration': duration,
+      });
       _saveAndNotify();
     }
   }
 
   void deleteExperience(int index) {
-    if (currentCV != null) {
+    if (currentCV != null && index < currentCV!.experiences.length) {
       currentCV!.experiences.removeAt(index);
       _saveAndNotify();
     }
   }
 
-
   void addSkill(String skill) {
+    if (currentCVIndex == -1) createNewCV();
     if (currentCV != null) {
-      currentCV!.skills.add(skill);
+      currentCV!.skills = List.from(currentCV!.skills)..add(skill);
       _saveAndNotify();
     }
   }
 
   void deleteSkill(int index) {
-    if (currentCV != null) {
+    if (currentCV != null && index < currentCV!.skills.length) {
       currentCV!.skills.removeAt(index);
       _saveAndNotify();
     }
   }
 
-  void createNewCV() {
-    allCVs.add(CVModel(id: DateTime.now().millisecondsSinceEpoch.toString()));
-    currentCVIndex = allCVs.length - 1;
-    _saveAndNotify();
+ void saveSelectedTemplate(String templateId) {
+    if (currentCV != null) {
+      currentCV!.templateId = templateId; // حفظ القالب المختار في السيرة الحالية
+      _saveToPrefs(); // حفظ البيانات في الذاكرة الدائمة
+      currentCVIndex = -1; // تصفير المؤشر لكي تصبح الواجهة فارغة لسيرة جديدة
+      notifyListeners(); // تحديث التطبيق فوراً
+    }
+  }
+
+  void updateBio(String newBio) { if (currentCVIndex == -1) createNewCV(); currentCV?.bio = newBio; _saveAndNotify(); }
+  
+  void updateEducation(String uni, String deg, String year) { 
+    if (currentCVIndex == -1) createNewCV(); 
+    if (currentCV != null) {
+      currentCV!.university = uni; currentCV!.degree = deg; currentCV!.gradYear = year; _saveAndNotify(); 
+    }
   }
 
   void deleteCV(int index) {
     if (index >= 0 && index < allCVs.length) {
-      allCVs.removeAt(index);
-      if (currentCVIndex >= allCVs.length) currentCVIndex = allCVs.length - 1;
+      String idToDelete = allCVs[index].id;
+      _allCVs.removeWhere((cv) => cv.id == idToDelete);
+      currentCVIndex = -1;
       _saveAndNotify();
     }
   }
 
- 
-  set currentCVIndexSet(int index) {
-    currentCVIndex = index;
-    notifyListeners();
+  void setSignUpName(String name) { _signUpName = name; notifyListeners(); }
+  void toggleTheme() { isDarkMode = !isDarkMode; notifyListeners(); }
+  void toggleLanguage() { isArabic = !isArabic; notifyListeners(); }
+  
+  // Setter لتحديد السيرة التي نعدلها الآن
+  set currentCVIndexSet(int index) { 
+    currentCVIndex = index; 
+    notifyListeners(); 
   }
 
-  
   Future<void> pickProfileImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -185,22 +234,18 @@ class AppProvider with ChangeNotifier {
     }
   }
 
-  void toggleTheme() { isDarkMode = !isDarkMode; notifyListeners(); }
-  void toggleLanguage() { isArabic = !isArabic; notifyListeners(); }
-
   void _saveAndNotify() { _saveToPrefs(); notifyListeners(); }
 
   Future<void> _saveToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('all_cvs_v2', json.encode(allCVs.map((e) => e.toJson()).toList()));
+    prefs.setString('all_cvs_v2', json.encode(_allCVs.map((e) => e.toJson()).toList()));
   }
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     String? data = prefs.getString('all_cvs_v2');
     if (data != null) {
-      allCVs = (json.decode(data) as List).map((e) => CVModel.fromJson(e)).toList();
-      if (allCVs.isNotEmpty && currentCVIndex == -1) currentCVIndex = 0;
+      _allCVs = (json.decode(data) as List).map((e) => CVModel.fromJson(e)).toList();
       notifyListeners();
     }
   }

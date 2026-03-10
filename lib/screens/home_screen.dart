@@ -6,10 +6,10 @@ import '../widgets/home_bottom_bar.dart';
 import '../widgets/home_tab.dart';
 import '../widgets/cv_builder_content.dart';
 import '../widgets/personal_info_sheet.dart';
-import '../widgets/education_sheet.dart';    
-import '../widgets/experience_sheet.dart';   
+import '../widgets/education_sheet.dart';
+import '../widgets/experience_sheet.dart';
 import '../widgets/skills_sheet.dart';
-import '../widgets/bio_sheet.dart'; 
+import '../widgets/bio_sheet.dart';
 import 'templates_content.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isAr: provider.isArabic,
       onThemeToggle: () => provider.toggleTheme(),
       onLanguageToggle: () => provider.toggleLanguage(),
+      showUserIcon: true,
       bottomBar: HomeBottomBar(
         currentIndex: _currentIndex,
         isDark: provider.isDarkMode,
@@ -48,40 +49,56 @@ class _HomeScreenState extends State<HomeScreen> {
       child: IndexedStack(
         index: _currentIndex,
         children: [
-          HomeTab(onAddNew: () => setState(() => _currentIndex = 1)),
-          
-          
+          HomeTab(
+            onAddNew: () {
+              provider.currentCVIndexSet = -1; // تصفير المؤشر لإنشاء سيرة جديدة
+              setState(() => _currentIndex = 1);
+            },
+          ),
+
           CVBuilderContent(
-            isDark: provider.isDarkMode, 
+            isDark: provider.isDarkMode,
             isAr: provider.isArabic,
             // 1. المعلومات الشخصية
             onPersonalInfoTap: () => _showSheet(
-              context, 
-              PersonalSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
-            ), 
+              context,
+              PersonalSheet(
+                isDark: provider.isDarkMode,
+                isAr: provider.isArabic,
+              ),
+            ),
             // 2. النبذة المهنية
             onBioTap: () => _showSheet(
-              context, 
-              BioSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
+              context,
+              BioSheet(isDark: provider.isDarkMode, isAr: provider.isArabic),
             ),
             // 3. التعليم
             onEducationTap: () => _showSheet(
-              context, 
-              EducationSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
+              context,
+              EducationSheet(
+                isDark: provider.isDarkMode,
+                isAr: provider.isArabic,
+              ),
             ),
             // 4. الخبرات
             onExperienceTap: () => _showSheet(
-              context, 
-              ExperienceSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
+              context,
+              ExperienceSheet(
+                isDark: provider.isDarkMode,
+                isAr: provider.isArabic,
+              ),
             ),
             // 5. المهارات
             onSkillsTap: () => _showSheet(
-              context, 
-              SkillsSheet(isDark: provider.isDarkMode, isAr: provider.isArabic)
+              context,
+              SkillsSheet(isDark: provider.isDarkMode, isAr: provider.isArabic),
             ),
           ),
-          
-          TemplatesContent(isDark: provider.isDarkMode, isAr: provider.isArabic),
+
+          TemplatesContent(
+            isDark: provider.isDarkMode,
+            isAr: provider.isArabic,
+          ),
         ],
       ),
     );

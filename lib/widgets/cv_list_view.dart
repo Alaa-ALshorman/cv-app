@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:printing/printing.dart'; // مكتبة عرض الـ PDF
+import 'package:printing/printing.dart'; 
 import '../app_provider.dart';
 
 // --- استيراد دوال توليد الـ PDF ---
@@ -26,7 +26,10 @@ class CVListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
-    final allCVs = provider.allCVs;
+    
+    // --- التعديل 1: ترتيب السير من الأحدث للأقدم ---
+    final allCVs = provider.allCVs.reversed.toList(); 
+    
     final Color primaryGreen = isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
 
     if (allCVs.isEmpty) {
@@ -38,6 +41,8 @@ class CVListView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       itemBuilder: (context, index) {
         final cv = allCVs[index];
+        // ملاحظة: عند الحذف نحتاج الـ index الحقيقي من القائمة الأصلية
+        final int originalIndex = provider.allCVs.length - 1 - index;
         
         return Dismissible(
           key: Key(cv.id),
@@ -46,7 +51,7 @@ class CVListView extends StatelessWidget {
             return await _showDeleteDialog(context);
           },
           onDismissed: (direction) {
-            provider.deleteCV(index);
+            provider.deleteCV(originalIndex);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(isAr ? "تم حذف السيرة الذاتية" : "CV deleted"))
             );
@@ -58,29 +63,64 @@ class CVListView extends StatelessWidget {
               color: isDark ? const Color(0xFF003D33) : Colors.white,
               borderRadius: BorderRadius.circular(15),
               border: Border.all(color: primaryGreen.withOpacity(0.2)),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05), 
+                  blurRadius: 5, 
+                  offset: const Offset(0, 2)
+                )
+              ],
             ),
-            child: ListTile(
-              // --- تعديل الـ onTap لفتح المعاينة مباشرة ---
+            // --- التعديل 2: تصميم أفقي أنيق بـ Row بدلاً من ListTile ---
+            child: InkWell(
+              borderRadius: BorderRadius.circular(15),
               onTap: () async {
                 _openCVPreview(context, provider, cv.templateId);
               },
-              leading: CircleAvatar(
-                backgroundColor: primaryGreen.withOpacity(0.1),
-                child: Icon(Icons.description_rounded, color: primaryGreen),
-              ),
-              title: Text(
-                cv.fullName.isEmpty ? (isAr ? "سيرة بدون اسم" : "Unnamed CV") : cv.fullName, 
-                style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold)
-              ),
-              subtitle: Text(isAr ? "اضغط للمعاينة والطباعة" : "Tap to preview & print", style: const TextStyle(fontSize: 11)),
-              // أضفنا زر صغير للتعديل بجانب السهم
-              trailing: IconButton(
-                icon: Icon(Icons.edit_note_rounded, color: primaryGreen),
-                onPressed: () {
-                  provider.currentCVIndex = index; 
-                  onAddNew(); 
-                },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: primaryGreen.withOpacity(0.1),
+                      radius: 22,
+                      child: Icon(Icons.description_rounded, color: primaryGreen, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            cv.fullName.isEmpty ? (isAr ? "سيرة بدون اسم" : "Unnamed CV") : cv.fullName, 
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black, 
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            isAr ? "اضغط للمعاينة والطباعة" : "Tap to preview & print", 
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isDark ? Colors.white70 : Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.edit_note_rounded, color: primaryGreen, size: 28),
+                      onPressed: () {
+                        provider.currentCVIndex = originalIndex; 
+                        onAddNew(); 
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -89,11 +129,9 @@ class CVListView extends StatelessWidget {
     );
   }
 
-  // دالة توليد وفتح الـ PDF
   void _openCVPreview(BuildContext context, AppProvider provider, String? templateId) async {
     dynamic pdfData;
 
-    // اختيار القالب بناءً على الـ ID المخزن في السيرة المحفوظة
     if (templateId == 'modern') pdfData = await generateModernTemplate(provider);
     else if (templateId == 'royal') pdfData = await generateRoyalTemplate(provider);
     else if (templateId == 'pro') pdfData = await generateProfessionalTemplate(provider);
@@ -120,8 +158,6 @@ class CVListView extends StatelessWidget {
       );
     }
   }
-
-  // --- دوال التصميم المساعدة (UI Helpers) ---
 
   Widget _buildEmptyState(Color color) {
     return Center(

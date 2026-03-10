@@ -27,7 +27,6 @@ class TemplatesContent extends StatelessWidget {
     final provider = Provider.of<AppProvider>(context);
     final primaryGreen = isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
 
-    // قائمة القوالب مع مسارات الصور
     final List<Map<String, dynamic>> myTemplates = [
       {'id': 'modern', 'name': isAr ? 'القالب العصري' : 'Modern Template', 'image': 'assets/templates/temp1.png', 'color': Colors.cyan},
       {'id': 'royal', 'name': isAr ? 'القالب الملكي' : 'Royal Template', 'image': 'assets/templates/temp2.png', 'color': const Color(0xFF1B5E20)},
@@ -43,7 +42,7 @@ class TemplatesContent extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 20,
         mainAxisSpacing: 20,
-        childAspectRatio: 0.65, // تعديل النسبة ليكون المربع متناسقاً مع طول صفحة الـ CV
+        childAspectRatio: 0.65, 
       ),
       itemCount: myTemplates.length,
       itemBuilder: (context, index) {
@@ -52,25 +51,28 @@ class TemplatesContent extends StatelessWidget {
           onTap: () async {
             dynamic data;
             
-            if (temp['id'] == 'modern') {
-              data = await generateModernTemplate(provider);
-            } else if (temp['id'] == 'royal') {
-              data = await generateRoyalTemplate(provider);
-            } else if (temp['id'] == 'classic') {
-              data = await generateClassicTemplate(provider);
-            } else if (temp['id'] == 'elegant') {
-              data = await generateElegantTemplate(provider);
-            } else if (temp['id'] == 'minimal') {
-              data = await generateMinimalistTemplate(provider);
-            } else if (temp['id'] == 'pro') { 
-              data = await generateProfessionalTemplate(provider);
-            }
+            // تصحيح الاستدعاء ليكون من خلال الكلاس
+            try {
+              if (temp['id'] == 'modern') {
+                data = await generateModernTemplate(provider);
+              } else if (temp['id'] == 'royal') {
+                data = await generateRoyalTemplate(provider);
+              } else if (temp['id'] == 'classic') {
+                data = await  generateClassicTemplate(provider);
+              } else if (temp['id'] == 'elegant') {
+                data = await generateElegantTemplate(provider);
+              } else if (temp['id'] == 'minimal') {
+                data = await generateMinimalistTemplate(provider);
+              } else if (temp['id'] == 'pro') { 
+                data = await generateProfessionalTemplate(provider);
+              }
 
-            if (data != null) {
-              _showPreview(context, data, temp['name'], provider, temp['id']);
-            } else {
+              if (data != null) {
+                _showPreview(context, data, temp['name'], provider, temp['id']);
+              }
+            } catch (e) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(isAr ? "هذا القالب قيد التجهيز..." : "Coming Soon!"))
+                SnackBar(content: Text(isAr ? "خطأ في تحميل القالب" : "Error loading template"))
               );
             }
           },
@@ -78,7 +80,7 @@ class TemplatesContent extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.all(8), // هامش داخلي لإظهار الصورة كإطار
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF002B22) : Colors.white,
                     borderRadius: BorderRadius.circular(15),
@@ -91,7 +93,7 @@ class TemplatesContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     child: Image.asset(
                       temp['image'],
-                      fit: BoxFit.contain, // هذا التغيير الجوهري ليظهر محتوى الصورة بالكامل دون قص
+                      fit: BoxFit.contain, 
                       errorBuilder: (context, error, stackTrace) => Center(
                         child: Icon(Icons.insert_drive_file, size: 40, color: temp['color'].withOpacity(0.4)),
                       ),
@@ -129,17 +131,10 @@ class TemplatesContent extends StatelessWidget {
                 onPressed: () {
                   provider.saveSelectedTemplate(templateId);
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(isAr ? "تم حفظ السيرة والعودة للرئيسية" : "CV Saved & Returned Home"),
-                      backgroundColor: Colors.green,
-                    )
-                  );
                 },
                 icon: const Icon(Icons.check_circle, color: Colors.white),
                 label: Text(isAr ? "حفظ" : "Save", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
-              const SizedBox(width: 10),
             ],
           ),
           body: PdfPreview(

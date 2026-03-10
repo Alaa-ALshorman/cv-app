@@ -10,9 +10,9 @@ Future<Uint8List> generateMinimalistTemplate(AppProvider provider) async {
   final arabicFont = await PdfGoogleFonts.cairoRegular();
   final arabicFontBold = await PdfGoogleFonts.cairoBold();
 
-  
+  // --- إصلاح جلب الصورة ---
   pw.ImageProvider? profileImage;
-  if (provider.profileImagePath != null) {
+  if (provider.profileImagePath != null && provider.profileImagePath!.isNotEmpty) {
     final file = File(provider.profileImagePath!);
     if (await file.exists()) {
       profileImage = pw.MemoryImage(await file.readAsBytes());
@@ -29,7 +29,7 @@ Future<Uint8List> generateMinimalistTemplate(AppProvider provider) async {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-             
+              // --- الرأس كما هو في تصميمك ---
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -38,7 +38,7 @@ Future<Uint8List> generateMinimalistTemplate(AppProvider provider) async {
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text(provider.userName, style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold)),
+                        pw.Text(provider.fullName.toUpperCase(), style: pw.TextStyle(fontSize: 26, fontWeight: pw.FontWeight.bold)),
                         pw.Text(provider.jobTitle, style: const pw.TextStyle(fontSize: 14, color: PdfColors.grey700)),
                         pw.SizedBox(height: 5),
                         pw.Text("${provider.email}  |  ${provider.phone}", style: const pw.TextStyle(fontSize: 10)),
@@ -58,30 +58,32 @@ Future<Uint8List> generateMinimalistTemplate(AppProvider provider) async {
               pw.Container(height: 1, color: PdfColors.black),
               pw.SizedBox(height: 15),
 
-              // الملخص المهني
+              // --- الملخص المهني ---
               if (provider.bio.isNotEmpty) ...[
                 pw.Text(provider.bio, style: const pw.TextStyle(fontSize: 11)),
                 pw.SizedBox(height: 20),
               ],
 
-              // قسم التعليم
-              _buildSectionTitle(provider.isArabic ? "التعليم" : "Education"),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(provider.university, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
-                  pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text(provider.degree, style: const pw.TextStyle(fontSize: 10)),
-                      pw.Text(provider.gradYear, style: const pw.TextStyle(fontSize: 10)),
-                    ],
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 20),
+              // --- إصلاح قسم التعليم (لا يظهر إلا إذا وُجدت بيانات) ---
+              if (provider.university.isNotEmpty) ...[
+                _buildSectionTitle(provider.isArabic ? "التعليم" : "Education"),
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(provider.university, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                    pw.Row(
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Text(provider.degree, style: const pw.TextStyle(fontSize: 10)),
+                        pw.Text(provider.gradYear, style: const pw.TextStyle(fontSize: 10)),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+              ],
 
-              // قسم الخبرات العملية
+              // --- قسم الخبرات العملية (جلب القائمة كاملة) ---
               if (provider.experiences.isNotEmpty) ...[
                 _buildSectionTitle(provider.isArabic ? "الخبرة العملية" : "Work Experience"),
                 ...provider.experiences.map((exp) => pw.Padding(
@@ -103,7 +105,7 @@ Future<Uint8List> generateMinimalistTemplate(AppProvider provider) async {
                 pw.SizedBox(height: 10),
               ],
 
-              // قسم المهارات
+              // --- قسم المهارات ---
               if (provider.skills.isNotEmpty) ...[
                 _buildSectionTitle(provider.isArabic ? "المهارات" : "Skills"),
                 pw.Text(provider.skills.join("  •  "), style: const pw.TextStyle(fontSize: 10)),
@@ -117,7 +119,7 @@ Future<Uint8List> generateMinimalistTemplate(AppProvider provider) async {
   return pdf.save();
 }
 
-
+// دالة العناوين كما هي
 pw.Widget _buildSectionTitle(String title) {
   return pw.Padding(
     padding: const pw.EdgeInsets.only(bottom: 5),
