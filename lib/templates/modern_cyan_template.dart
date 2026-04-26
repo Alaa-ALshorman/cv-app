@@ -10,7 +10,6 @@ Future<Uint8List> generateModernTemplate(AppProvider provider) async {
   final arabicFont = await PdfGoogleFonts.cairoRegular();
   final arabicFontBold = await PdfGoogleFonts.cairoBold();
 
-  // --- إصلاح جلب الصورة ---
   pw.ImageProvider? profileImage;
   if (provider.profileImagePath != null && provider.profileImagePath!.isNotEmpty) {
     final file = File(provider.profileImagePath!);
@@ -29,7 +28,6 @@ Future<Uint8List> generateModernTemplate(AppProvider provider) async {
           textDirection: provider.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
           child: pw.Column(
             children: [
-              // --- رأس الصفحة (Header) ---
               pw.Container(
                 width: double.infinity,
                 padding: const pw.EdgeInsets.symmetric(vertical: 30, horizontal: 40),
@@ -62,17 +60,14 @@ Future<Uint8List> generateModernTemplate(AppProvider provider) async {
                 ),
               ),
 
-              // --- محتوى الـ CV ---
               pw.Padding(
                 padding: const pw.EdgeInsets.all(35),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // نبذة تعريفية
                     if (provider.bio.isNotEmpty)
                       _buildModernSection(provider.isArabic ? "نبذة تعريفية" : "About Me", provider.bio),
 
-                    // --- إصلاح قسم التعليم ---
                     if (provider.university.isNotEmpty) ...[
                       pw.SizedBox(height: 20),
                       pw.Text(provider.isArabic ? "التعليم" : "Education", style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.cyan800)),
@@ -83,7 +78,6 @@ Future<Uint8List> generateModernTemplate(AppProvider provider) async {
                               style: const pw.TextStyle(fontSize: 10)),
                     ],
 
-                    // --- قسم الخبرات (جلب كل البيانات) ---
                     if (provider.experiences.isNotEmpty) ...[
                       pw.SizedBox(height: 25),
                       pw.Text(provider.isArabic ? "الخبرات العملية" : "Work Experience", style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.cyan800)),
@@ -106,7 +100,6 @@ Future<Uint8List> generateModernTemplate(AppProvider provider) async {
                       )).toList(),
                     ],
 
-                    // --- قسم المهارات ---
                     if (provider.skills.isNotEmpty) ...[
                       pw.SizedBox(height: 25),
                       pw.Text(provider.isArabic ? "المهارات" : "Skills", style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: PdfColors.cyan800)),
@@ -138,7 +131,6 @@ Future<Uint8List> generateModernTemplate(AppProvider provider) async {
   return pdf.save();
 }
 
-// دالة مساعدة بناء الأقسام كما هي
 pw.Widget _buildModernSection(String title, String content) {
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,

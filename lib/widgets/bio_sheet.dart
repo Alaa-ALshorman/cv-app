@@ -33,7 +33,6 @@ class _BioSheetState extends State<BioSheet> {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     
-    // توحيد الألوان الملكية
     final Color primaryGreen = widget.isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
     final Color accentGreen = widget.isDark ? const Color(0xFF004D40) : const Color(0xFFE8F5E9);
     final Color textColor = widget.isDark ? Colors.white : const Color(0xFF002B22);
@@ -51,7 +50,6 @@ class _BioSheetState extends State<BioSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // شريط السحب العلوي
             Container(
               width: 40, 
               height: 4, 
@@ -62,14 +60,12 @@ class _BioSheetState extends State<BioSheet> {
             ),
             const SizedBox(height: 25),
             
-            // العنوان
             Text(
               widget.isAr ? "النبذة الشخصية" : "Professional Bio",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textColor),
             ),
             const SizedBox(height: 30),
             
-            // حقل النبذة بنفس استايل حقول التعليم
             TextField(
               controller: _bioController,
               maxLines: 5,
@@ -92,7 +88,6 @@ class _BioSheetState extends State<BioSheet> {
             
             const SizedBox(height: 35),
             
-            // زر الحفظ الكبير والمميز
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryGreen,

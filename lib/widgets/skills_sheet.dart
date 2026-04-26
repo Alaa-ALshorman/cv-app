@@ -14,13 +14,12 @@ class SkillsSheet extends StatefulWidget {
 class _SkillsSheetState extends State<SkillsSheet> {
   final TextEditingController _skillController = TextEditingController();
 
-  // دالة الإضافة السريعة مع التأكد من التحديث
   void _addNewSkill(AppProvider provider) {
     String text = _skillController.text.trim();
     if (text.isNotEmpty) {
-      provider.addSkill(text); // إرسال للبروفايدر
+      provider.addSkill(text);
       setState(() {
-        _skillController.clear(); // مسح الحقل فوراً وتحديث الواجهة المحلية
+        _skillController.clear();
       });
     }
   }
@@ -33,7 +32,6 @@ class _SkillsSheetState extends State<SkillsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // نستخدم listen: false هنا لأننا سنعتمد على Consumer للتحديث اللحظي
     final provider = Provider.of<AppProvider>(context, listen: false);
     
     final Color primaryGreen = widget.isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
@@ -99,7 +97,6 @@ class _SkillsSheetState extends State<SkillsSheet> {
           ),
           const SizedBox(height: 25),
 
-          // --- تعديل منطقة العرض باستخدام Consumer ---
           Expanded(
             child: Consumer<AppProvider>(
               builder: (context, skillsProvider, child) {

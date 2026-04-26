@@ -32,7 +32,6 @@ Future<Uint8List> generateClassicTemplate(AppProvider provider) async {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // --- الرأس: الاسم، الوظيفة، والصورة ---
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
@@ -81,7 +80,6 @@ Future<Uint8List> generateClassicTemplate(AppProvider provider) async {
               pw.Divider(thickness: 1, color: PdfColors.black),
               pw.SizedBox(height: 10),
 
-              // --- الملخص المهني ---
               if (provider.bio.isNotEmpty) ...[
                 pw.Text(
                   provider.isArabic ? "الملخص المهني" : "Summary",
@@ -98,7 +96,6 @@ Future<Uint8List> generateClassicTemplate(AppProvider provider) async {
                 pw.SizedBox(height: 20),
               ],
 
-              // --- قسم الخبرات ---
               pw.Text(
                 provider.isArabic
                     ? "الخبرات العملية"
@@ -141,7 +138,6 @@ Future<Uint8List> generateClassicTemplate(AppProvider provider) async {
 
               pw.SizedBox(height: 20),
 
-              // --- قسم التعليم المطور ---
               if (provider.university.isNotEmpty) ...[
                 pw.Text(
                   provider.isArabic ? "التعليم" : "Education",
@@ -176,7 +172,6 @@ Future<Uint8List> generateClassicTemplate(AppProvider provider) async {
                 pw.SizedBox(height: 20),
               ],
 
-              // --- قسم المهارات ---
               if (provider.skills.isNotEmpty) ...[
                 pw.Text(
                   provider.isArabic ? "المهارات" : "Skills",

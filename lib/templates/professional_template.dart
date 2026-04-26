@@ -1,13 +1,12 @@
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart'; // ضروري لجلب الخطوط
+import 'package:printing/printing.dart';
 import '../app_provider.dart';
 
 Future<Uint8List> generateProfessionalTemplate(AppProvider provider) async {
   final pdf = pw.Document();
   
-  // --- إصلاح الخطوط لدعم العربية ---
   final arabicFont = await PdfGoogleFonts.cairoRegular();
   final arabicFontBold = await PdfGoogleFonts.cairoBold();
 
@@ -21,7 +20,6 @@ Future<Uint8List> generateProfessionalTemplate(AppProvider provider) async {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // --- رأس الصفحة الكحلي ---
               pw.Container(
                 padding: const pw.EdgeInsets.all(20),
                 decoration: const pw.BoxDecoration(color: PdfColors.blueGrey900),
@@ -51,7 +49,6 @@ Future<Uint8List> generateProfessionalTemplate(AppProvider provider) async {
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    // --- 1. الملخص المهني ---
                     if (provider.bio.isNotEmpty) ...[
                       pw.Text(provider.isArabic ? "الملخص المهني" : "SUMMARY", 
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey)),
@@ -60,7 +57,6 @@ Future<Uint8List> generateProfessionalTemplate(AppProvider provider) async {
                       pw.SizedBox(height: 20),
                     ],
 
-                    // --- 2. المؤهلات العلمية (التعليم) ---
                     if (provider.university.isNotEmpty) ...[
                       pw.Text(provider.isArabic ? "التعليم" : "EDUCATION", 
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey)),
@@ -70,7 +66,6 @@ Future<Uint8List> generateProfessionalTemplate(AppProvider provider) async {
                       pw.SizedBox(height: 20),
                     ],
 
-                    // --- 3. الخبرات العملية (جلب القائمة كاملة) ---
                     if (provider.experiences.isNotEmpty) ...[
                       pw.Text(provider.isArabic ? "الخبرات العملية" : "WORK EXPERIENCE", 
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey)),
@@ -94,7 +89,6 @@ Future<Uint8List> generateProfessionalTemplate(AppProvider provider) async {
                       pw.SizedBox(height: 20),
                     ],
 
-                    // --- 4. المهارات ---
                     if (provider.skills.isNotEmpty) ...[
                       pw.Text(provider.isArabic ? "المهارات" : "SKILLS", 
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.blueGrey)),

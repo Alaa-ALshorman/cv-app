@@ -10,7 +10,8 @@ import '../widgets/education_sheet.dart';
 import '../widgets/experience_sheet.dart';
 import '../widgets/skills_sheet.dart';
 import '../widgets/bio_sheet.dart';
-import 'templates_content.dart';
+import '../widgets/app_template_picker.dart';
+import 'profile_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isAr: provider.isArabic,
       onThemeToggle: () => provider.toggleTheme(),
       onLanguageToggle: () => provider.toggleLanguage(),
-      showUserIcon: true,
+      showUserIcon: false,
       bottomBar: HomeBottomBar(
         currentIndex: _currentIndex,
         isDark: provider.isDarkMode,
@@ -50,8 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: [
           HomeTab(
-            onAddNew: () {
-              provider.currentCVIndexSet = -1; // تصفير المؤشر لإنشاء سيرة جديدة
+            onStartNewCv: () {
+              provider.startNewCvDraft();
+              setState(() => _currentIndex = 1);
+            },
+            onOpenBuilder: () {
               setState(() => _currentIndex = 1);
             },
           ),
@@ -59,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
           CVBuilderContent(
             isDark: provider.isDarkMode,
             isAr: provider.isArabic,
-            // 1. المعلومات الشخصية
+            onTemplateTap: () => showBuilderTemplateSelector(context),
             onPersonalInfoTap: () => _showSheet(
               context,
               PersonalSheet(
@@ -67,12 +71,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 isAr: provider.isArabic,
               ),
             ),
-            // 2. النبذة المهنية
             onBioTap: () => _showSheet(
               context,
               BioSheet(isDark: provider.isDarkMode, isAr: provider.isArabic),
             ),
-            // 3. التعليم
             onEducationTap: () => _showSheet(
               context,
               EducationSheet(
@@ -80,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 isAr: provider.isArabic,
               ),
             ),
-            // 4. الخبرات
             onExperienceTap: () => _showSheet(
               context,
               ExperienceSheet(
@@ -88,16 +89,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 isAr: provider.isArabic,
               ),
             ),
-            // 5. المهارات
             onSkillsTap: () => _showSheet(
               context,
               SkillsSheet(isDark: provider.isDarkMode, isAr: provider.isArabic),
             ),
           ),
 
-          TemplatesContent(
+          ProfilePage(
             isDark: provider.isDarkMode,
             isAr: provider.isArabic,
+            onThemeToggle: () => provider.toggleTheme(),
+            onLanguageToggle: () => provider.toggleLanguage(),
           ),
         ],
       ),

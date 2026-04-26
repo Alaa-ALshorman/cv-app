@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import '../theme/royal_theme.dart';
 
 class HomeBottomBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
   final bool isDark;
-  // أضفت المعامل isAr هنا لحل خطأ التيرمينال في الملفات التي تستدعي هذا الوجت
-  final bool isAr; 
+  final bool isAr;
 
   const HomeBottomBar({
     super.key,
@@ -17,22 +17,25 @@ class HomeBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // باليت الألوان الملكية المتناغمة مع الأخضر
-    final Color activeColor = isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
-    final Color inactiveColor = isDark ? Colors.white38 : Colors.black38;
-    final Color barBg = isDark ? const Color(0xFF002B22).withOpacity(0.95) : Colors.white.withOpacity(0.9);
+    final Color active = RoyalTheme.primary(isDark);
+    final Color inactive = isDark ? Colors.white38 : Colors.black38;
+    final Color barBg = isDark
+        ? RoyalTheme.cardDark.withValues(alpha: 0.97)
+        : Colors.white.withValues(alpha: 0.94);
 
     return Container(
-      // جعل الشريط "طافياً" ومنفصلاً تماماً عن المربع العلوي
-      margin: const EdgeInsets.fromLTRB(25, 0, 25, 25),
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
         color: barBg,
-        borderRadius: BorderRadius.circular(35), // شكل كبسولة أنيق
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: active.withValues(alpha: isDark ? 0.12 : 0.14),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 25,
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+            blurRadius: 24,
             offset: const Offset(0, 10),
           ),
         ],
@@ -40,46 +43,49 @@ class HomeBottomBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(0, Icons.home_rounded, isAr ? "الرئيسية" : "Home", activeColor, inactiveColor),
-          _buildNavItem(1, Icons.edit_document, isAr ? "المحرر" : "Builder", activeColor, inactiveColor),
-          _buildNavItem(2, Icons.grid_view_rounded, isAr ? "القوالب" : "Templates", activeColor, inactiveColor),
+          _buildNavItem(0, Icons.home_rounded, isAr ? "الرئيسية" : "Home", active, inactive),
+          _buildNavItem(1, Icons.edit_document, isAr ? "المحرر" : "Builder", active, inactive),
+          _buildNavItem(2, Icons.person_rounded, isAr ? "الحساب" : "Profile", active, inactive),
         ],
       ),
     );
   }
 
   Widget _buildNavItem(int index, IconData icon, String label, Color active, Color inactive) {
-    bool isSelected = currentIndex == index;
-    return GestureDetector(
-      onTap: () => onTap(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeOutBack,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          // تأثير خلفية خفيف يبرز الأيقونة المختارة
-          color: isSelected ? active.withOpacity(0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? active : inactive,
-              size: isSelected ? 28 : 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? active : inactive,
-                fontSize: 11,
-                // استخدام w900 بدلاً من black لتجنب أخطاء التيرمينال
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+    final bool selected = currentIndex == index;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onTap(index),
+        borderRadius: BorderRadius.circular(18),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: selected ? active.withValues(alpha: 0.14) : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: selected ? active : inactive,
+                size: selected ? 26 : 23,
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? active : inactive,
+                  fontSize: 11,
+                  fontWeight: selected ? FontWeight.w900 : FontWeight.w500,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

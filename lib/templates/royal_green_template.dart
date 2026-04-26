@@ -11,7 +11,6 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
   final arabicFont = await PdfGoogleFonts.cairoRegular();
   final arabicFontBold = await PdfGoogleFonts.cairoBold();
 
-  // --- جلب صورة البروفايل بأمان ---
   pw.ImageProvider? profileImage;
   if (provider.profileImagePath != null && provider.profileImagePath!.isNotEmpty) {
     try {
@@ -34,7 +33,6 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
           textDirection: provider.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
           child: pw.Row(
             children: [
-              // --- العمود الجانبي (الأخضر الغامق) ---
               pw.Container(
                 width: 200,
                 color: const PdfColor.fromInt(0xFF1B5E20),
@@ -43,7 +41,6 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
                   crossAxisAlignment: pw.CrossAxisAlignment.center,
                   children: [
                     pw.SizedBox(height: 40),
-                    // الصورة الشخصية
                     pw.Container(
                       width: 100,
                       height: 100,
@@ -65,13 +62,11 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
                         style: const pw.TextStyle(color: PdfColors.white, fontSize: 11)),
                     
                     pw.SizedBox(height: 40),
-                    // معلومات التواصل
                     _buildSidebarContact(provider.isArabic ? "التواصل" : "Contact"),
                     _buildSidebarText(provider.email),
                     _buildSidebarText(provider.phone),
                     
                     pw.SizedBox(height: 40),
-                    // المهارات (تنسيق Wrap لجلب القائمة كاملة)
                     if (provider.skills.isNotEmpty) ...[
                       _buildSidebarContact(provider.isArabic ? "المهارات" : "Skills"),
                       pw.Wrap(
@@ -92,14 +87,12 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
                 ),
               ),
 
-              // --- المحتوى الرئيسي (الأبيض) ---
               pw.Expanded(
                 child: pw.Container(
                   padding: const pw.EdgeInsets.all(40),
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      // الملخص المهني
                       if (provider.bio.isNotEmpty) ...[
                         _buildSectionHeader(provider.isArabic ? "الملخص المهني" : "Professional Summary"),
                         pw.SizedBox(height: 10),
@@ -107,7 +100,6 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
                         pw.SizedBox(height: 30),
                       ],
 
-                      // التعليم (آمن)
                       if (provider.university.isNotEmpty) ...[
                         _buildSectionHeader(provider.isArabic ? "المؤهلات العلمية" : "Education"),
                         pw.Divider(color: const PdfColor.fromInt(0xFF1B5E20), thickness: 1),
@@ -123,7 +115,6 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
                         pw.SizedBox(height: 30),
                       ],
 
-                      // الخبرات العملية (جلب القائمة كاملة)
                       if (provider.experiences.isNotEmpty) ...[
                         _buildSectionHeader(provider.isArabic ? "الخبرات العملية" : "Work Experience"),
                         pw.Divider(color: const PdfColor.fromInt(0xFF1B5E20), thickness: 1),
@@ -159,7 +150,6 @@ Future<Uint8List> generateRoyalTemplate(AppProvider provider) async {
   return pdf.save();
 }
 
-// دالات مساعدة
 pw.Widget _buildSectionHeader(String title) {
   return pw.Text(title, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: const PdfColor.fromInt(0xFF1B5E20)));
 }

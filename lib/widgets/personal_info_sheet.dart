@@ -22,7 +22,6 @@ class _PersonalSheetState extends State<PersonalSheet> {
   @override
   void initState() {
     super.initState();
-    // جلب البيانات المخزنة مسبقاً من الـ Provider لتظهر في الحقول عند الفتح
     final p = Provider.of<AppProvider>(context, listen: false);
     _nameController = TextEditingController(text: p.fullName);
     _jobController = TextEditingController(text: p.jobTitle);
@@ -43,7 +42,6 @@ class _PersonalSheetState extends State<PersonalSheet> {
   Widget build(BuildContext context) {
     final provider = Provider.of<AppProvider>(context);
     
-    // الألوان الملكية الموحدة
     final Color primaryGreen = widget.isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
     final Color accentGreen = widget.isDark ? const Color(0xFF004D40) : const Color(0xFFE8F5E9);
     final Color textColor = widget.isDark ? Colors.white : const Color(0xFF002B22);
@@ -58,7 +56,6 @@ class _PersonalSheetState extends State<PersonalSheet> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            // مقبض سحب بتصميم أنيق
             Container(
               width: 45, 
               height: 4, 
@@ -69,11 +66,8 @@ class _PersonalSheetState extends State<PersonalSheet> {
             ),
             const SizedBox(height: 25),
 
-            // --- قسم الصورة الشخصية ---
             GestureDetector(
               onTap: () {
-                // ملاحظة: تأكدي من وجود دالة pickProfileImage في الـ Provider الخاص بكِ
-                // provider.pickProfileImage(); 
               },
               child: Stack(
                 alignment: Alignment.bottomRight,
@@ -114,7 +108,6 @@ class _PersonalSheetState extends State<PersonalSheet> {
             ),
             const SizedBox(height: 35),
 
-            // --- حقول الإدخال ---
             _buildField(widget.isAr ? "الاسم الكامل" : "Full Name", Icons.person_outline_rounded, _nameController, primaryGreen, accentGreen, textColor),
             const SizedBox(height: 15),
             _buildField(widget.isAr ? "المسمى الوظيفي" : "Job Title", Icons.work_outline_rounded, _jobController, primaryGreen, accentGreen, textColor),
@@ -125,7 +118,6 @@ class _PersonalSheetState extends State<PersonalSheet> {
 
             const SizedBox(height: 40),
 
-            // --- زر الحفظ المعدل ---
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryGreen,
@@ -136,7 +128,6 @@ class _PersonalSheetState extends State<PersonalSheet> {
                 shadowColor: primaryGreen.withOpacity(0.4),
               ),
               onPressed: () {
-                // استدعاء دالة التحديث من الـ Provider لضمان حفظ البيانات وتحديث الرئيسية
                 provider.updatePersonalInfo(
                   _nameController.text,
                   _jobController.text,
@@ -144,10 +135,8 @@ class _PersonalSheetState extends State<PersonalSheet> {
                   _phoneController.text,
                 );
                 
-                // إغلاق الشاشة والرجوع
                 Navigator.pop(context);
                 
-                // إظهار تأكيد نجاح الحفظ
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(widget.isAr ? "تم حفظ البيانات بنجاح" : "Data saved successfully"),

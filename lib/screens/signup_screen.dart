@@ -40,12 +40,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
             password: _passwordController.text.trim(),
           );
 
-      await userCredential.user?.updateDisplayName(_nameController.text.trim());
+      final newUser = userCredential.user;
+      if (newUser != null) {
+        await newUser.updateDisplayName(_nameController.text.trim());
+        await newUser.reload();
+      }
 
-      // --- التعديل هنا: نقوم بتعريف الـ provider أولاً ثم نرسل الاسم ---
+      if (!mounted) return;
       final appProvider = Provider.of<AppProvider>(context, listen: false);
       appProvider.setSignUpName(_nameController.text.trim());
-      // -----------------------------------------------------------
+      appProvider.fetchFirebaseUserData();
 
       if (mounted) Navigator.pushReplacementNamed(context, '/home');
     } on FirebaseAuthException catch (e) {

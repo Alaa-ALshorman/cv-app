@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/glass_scaffold.dart';
 import 'package:provider/provider.dart';
 import '../app_provider.dart';
+import '../theme/royal_theme.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,13 +15,46 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  static const String _keyRemember = 'login_remember_me';
+  static const String _keySavedEmail = 'login_saved_email';
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _rememberMe = false;
 
-  
-  final Color primaryGreen = const Color(0xFF1B5E20); 
+  final Color primaryGreen = const Color(0xFF1B5E20);
   final Color accentGreen = const Color(0xFFE8F5E9);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRememberedLogin();
+  }
+
+  Future<void> _loadRememberedLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    final remember = prefs.getBool(_keyRemember) ?? false;
+    final savedEmail = prefs.getString(_keySavedEmail) ?? '';
+    setState(() {
+      _rememberMe = remember;
+      if (remember && savedEmail.isNotEmpty) {
+        _emailController.text = savedEmail;
+      }
+    });
+  }
+
+  Future<void> _applyRememberPreference(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setBool(_keyRemember, true);
+      await prefs.setString(_keySavedEmail, email);
+    } else {
+      await prefs.remove(_keyRemember);
+      await prefs.remove(_keySavedEmail);
+    }
+  }
 
   Future<void> _handleLogin() async {
     String email = _emailController.text.trim();
@@ -33,6 +68,10 @@ class _LoginScreenState extends State<LoginScreen> {
         email: email,
         password: password,
       );
+      await FirebaseAuth.instance.currentUser?.reload();
+      await _applyRememberPreference(email);
+      if (!mounted) return;
+      context.read<AppProvider>().fetchFirebaseUserData();
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
@@ -59,10 +98,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      backgroundColor: primaryGreen,
-      content: Text(message, style: const TextStyle(color: Colors.white)),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: RoyalTheme.forest,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        content: Text(message, style: const TextStyle(color: Colors.white)),
+      ),
+    );
   }
 
   @override
@@ -72,7 +116,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final bool isDark = provider.isDarkMode;
 
     final Color textColor = isDark ? Colors.white : const Color(0xFF002B22);
-    final Color fieldColor = isDark ? Colors.white.withOpacity(0.1) : accentGreen;
+    final Color fieldColor =
+        isDark ? Colors.white.withValues(alpha: 0.1) : accentGreen;
 
     return GlassScaffold(
       isDark: isDark,
@@ -85,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             
-            Icon(Icons.lock_person_rounded, size: 80, color: isDark ? const Color(0xFF00E676) : primaryGreen),
+            Icon(Icons.lock_person_rounded, size: 76, color: RoyalTheme.primary(isDark)),
             const SizedBox(height: 20),
             
             Text(
@@ -100,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 10),
             Text(
               isAr ? "مرحباً بك في صانع السيرة الذاتية الملكي" : "Welcome to Royal CV Maker",
-              style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+              style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 14),
             ),
             const SizedBox(height: 40),
             
@@ -123,7 +168,35 @@ class _LoginScreenState extends State<LoginScreen> {
               isDark ? const Color(0xFF00E676) : primaryGreen,
               isObscure: true
             ),
-            
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Checkbox(
+                  value: _rememberMe,
+                  onChanged: (v) => setState(() => _rememberMe = v ?? false),
+                  activeColor: isDark ? const Color(0xFF00E676) : primaryGreen,
+                  side: BorderSide(
+                    color: isDark ? Colors.white54 : primaryGreen.withValues(alpha: 0.6),
+                    width: 1.5,
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _rememberMe = !_rememberMe),
+                    behavior: HitTestBehavior.opaque,
+                    child: Text(
+                      isAr ? "تذكرني (حفظ البريد على هذا الجهاز)" : "Remember me (save email on this device)",
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.85),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             Align(
               alignment: isAr ? Alignment.centerRight : Alignment.centerLeft,
               child: TextButton(
@@ -135,32 +208,39 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
-            _isLoading 
-              ? CircularProgressIndicator(color: isDark ? const Color(0xFF00E676) : primaryGreen)
-              : ElevatedButton(
-                  onPressed: _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDark ? const Color(0xFF00E676) : primaryGreen,
-                    foregroundColor: isDark ? Colors.black : Colors.white,
-                    minimumSize: const Size(double.infinity, 60),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    elevation: 8,
-                    shadowColor: primaryGreen.withOpacity(0.5),
+            _isLoading
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: CircularProgressIndicator(color: RoyalTheme.primary(isDark)),
+                  )
+                : FilledButton(
+                    onPressed: _handleLogin,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: RoyalTheme.primary(isDark),
+                      foregroundColor: isDark ? RoyalTheme.nightBg : Colors.white,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(RoyalTheme.radiusButton),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      isAr ? "دخول ملكي" : "Royal Login",
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                    ),
                   ),
-                  child: Text(
-                    isAr ? "دخول ملكي" : "Royal Login", 
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
-                  ),
-                ),
             
             const SizedBox(height: 25),
             
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(isAr ? "ليس لديك حساب؟ " : "Don't have an account? ", style: TextStyle(color: textColor.withOpacity(0.8))),
+                Text(
+                  isAr ? "ليس لديك حساب؟ " : "Don't have an account? ",
+                  style: TextStyle(color: textColor.withValues(alpha: 0.8)),
+                ),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -193,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: primary),
         hintText: hint,
-        hintStyle: TextStyle(color: text.withOpacity(0.4)),
+        hintStyle: TextStyle(color: text.withValues(alpha: 0.4)),
         filled: true,
         fillColor: bg,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),

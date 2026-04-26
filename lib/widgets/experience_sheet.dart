@@ -27,7 +27,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // الألوان
     final Color primaryGreen = widget.isDark ? const Color(0xFF00E676) : const Color(0xFF1B5E20);
     final Color accentGreen = widget.isDark ? const Color(0xFF004D40) : const Color(0xFFE8F5E9);
     final Color textColor = widget.isDark ? Colors.white : const Color(0xFF002B22);
@@ -41,7 +40,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
       ),
       child: Column(
         children: [
-          // مقبض السحب
           Container(
             width: 45, 
             height: 4, 
@@ -66,7 +64,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
           
           const SizedBox(height: 25),
           
-          // زر إضافة الخبرة
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: primaryGreen,
@@ -77,7 +74,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
             ),
             onPressed: () {
               if (_compController.text.isNotEmpty) {
-                // نستخدم listen: false هنا لأننا داخل دالة onPressed
                 final provider = Provider.of<AppProvider>(context, listen: false);
                 
                 provider.addExperience(
@@ -86,7 +82,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
                   _durController.text
                 );
                 
-                // تفريغ الحقول وتحديث الواجهة المحلية
                 setState(() {
                   _compController.clear(); 
                   _posController.clear(); 
@@ -110,7 +105,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
           Divider(color: primaryGreen.withOpacity(0.1), thickness: 1.5),
           const SizedBox(height: 15),
           
-          // --- التعديل الجوهري هنا باستخدام Consumer ---
           Expanded(
             child: Consumer<AppProvider>(
               builder: (context, provider, child) {
@@ -153,7 +147,6 @@ class _ExperienceSheetState extends State<ExperienceSheet> {
                           icon: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent),
                           onPressed: () {
                             provider.deleteExperience(index);
-                            // الـ Consumer سيتكفل بتحديث الشاشة هنا تلقائياً
                           },
                         ),
                       ),

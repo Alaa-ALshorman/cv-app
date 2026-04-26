@@ -33,7 +33,6 @@ class _UserInfoSheetState extends State<UserInfoSheet> {
     userPhotoUrl = user?.photoURL;
   }
 
-  // --- دالة اختيار ورفع الصورة إلى Firebase Storage ---
   Future<void> _pickAndUploadImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
@@ -44,21 +43,17 @@ class _UserInfoSheetState extends State<UserInfoSheet> {
         final user = FirebaseAuth.instance.currentUser;
         if (user == null) return;
 
-        // 1. تحديد المسار في Storage
         final storageRef = FirebaseStorage.instance
             .ref()
             .child('user_photos')
             .child('${user.uid}.jpg');
 
-        // 2. رفع الملف الحقيقي
         await storageRef.putFile(File(image.path));
 
-        // 3. جلب الرابط المباشر وتحديث الحساب
         final downloadUrl = await storageRef.getDownloadURL();
         await user.updatePhotoURL(downloadUrl);
         await user.reload();
 
-        // 4. تحديث الـ Provider فوراً ليظهر في الهوم
         if (mounted) {
           Provider.of<AppProvider>(context, listen: false).fetchFirebaseUserData();
           setState(() => userPhotoUrl = downloadUrl);
@@ -71,7 +66,6 @@ class _UserInfoSheetState extends State<UserInfoSheet> {
     }
   }
 
-  // --- دالة تحديث الاسم في Firebase ---
   Future<void> _updateProfile() async {
     if (_nameController.text.trim().isEmpty) return;
 
@@ -82,7 +76,6 @@ class _UserInfoSheetState extends State<UserInfoSheet> {
         await user.updateDisplayName(_nameController.text.trim());
         await user.reload();
         
-        // تحديث الـ Provider ليعرف أن الاسم تغير
         if (mounted) {
           Provider.of<AppProvider>(context, listen: false).fetchFirebaseUserData();
           setState(() => _isEditing = false);
@@ -104,9 +97,12 @@ class _UserInfoSheetState extends State<UserInfoSheet> {
 
   Future<void> _handleLogout() async {
     await FirebaseAuth.instance.signOut();
-    if (mounted) {
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    }
+    if (!mounted) return;
+    final app = Provider.of<AppProvider>(context, listen: false);
+    app.clearActiveCv();
+    app.clearSignUpSessionLabel();
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   @override
@@ -125,12 +121,11 @@ class _UserInfoSheetState extends State<UserInfoSheet> {
           padding: const EdgeInsets.all(25),
           decoration: BoxDecoration(
             color: cardBg,
-            borderRadius: BorderRadius.circular(40), // زوايا الحبة
+            borderRadius: BorderRadius.circular(40),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // قسم الصورة الشخصية
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
@@ -159,7 +154,6 @@ class _UserInfoSheetState extends State<UserInfoSheet> {
               ),
               const SizedBox(height: 30),
 
-              // حقل الاسم
               TextField(
                 controller: _nameController,
                 onChanged: (val) => setState(() => _isEditing = true),

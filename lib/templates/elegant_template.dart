@@ -6,7 +6,6 @@ import 'package:printing/printing.dart';
 import '../app_provider.dart';
 
 Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
-  // صمام أمان في حال عدم وجود بيانات
   if (provider.currentCV == null) {
     final emptyPdf = pw.Document();
     emptyPdf.addPage(pw.Page(
@@ -19,7 +18,6 @@ Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
   final arabicFont = await PdfGoogleFonts.cairoRegular();
   final arabicFontBold = await PdfGoogleFonts.cairoBold();
 
-  // تجهيز صورة البروفايل
   pw.ImageProvider? profileImage;
   final String? imagePath = provider.profileImagePath;
   if (imagePath != null && imagePath.isNotEmpty) {
@@ -42,7 +40,6 @@ Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // --- الرأس: الاسم والوظيفة والمعلومات الشخصية ---
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
@@ -81,7 +78,6 @@ Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
                 pw.SizedBox(height: 15),
                 pw.Divider(thickness: 1.5, color: PdfColors.teal),
 
-                // --- 1. الملخص المهني (النبذة الشخصية) ---
                 if (provider.bio.isNotEmpty) ...[
                   pw.SizedBox(height: 15),
                   _buildSectionTitle(
@@ -90,7 +86,6 @@ Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
                       style: const pw.TextStyle(fontSize: 11)),
                 ],
 
-                // --- 2. المؤهلات العلمية (التعليم) ---
                 if (provider.university.isNotEmpty) ...[
                   pw.SizedBox(height: 20),
                   _buildSectionTitle(
@@ -117,7 +112,6 @@ Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
                   ),
                 ],
 
-                // --- 3. الخبرات العملية (جلب القائمة كاملة) ---
                 if (provider.experiences.isNotEmpty) ...[
                   pw.SizedBox(height: 20),
                   _buildSectionTitle(
@@ -152,7 +146,6 @@ Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
                       .toList(),
                 ],
 
-                // --- 4. المهارات (عرض كبطاقات Chips) ---
                 if (provider.skills.isNotEmpty) ...[
                   pw.SizedBox(height: 20),
                   _buildSectionTitle(
@@ -185,7 +178,6 @@ Future<Uint8List> generateElegantTemplate(AppProvider provider) async {
   return pdf.save();
 }
 
-// دالة مساعدة لبناء عناوين الأقسام بشكل موحد
 pw.Widget _buildSectionTitle(String title) {
   return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,

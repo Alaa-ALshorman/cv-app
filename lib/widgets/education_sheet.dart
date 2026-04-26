@@ -20,7 +20,6 @@ class _EducationSheetState extends State<EducationSheet> {
   @override
   void initState() {
     super.initState();
-    // جلب البيانات الحالية من الـ Provider لتظهر عند فتح الشاشة
     final provider = Provider.of<AppProvider>(context, listen: false);
     _uniController = TextEditingController(text: provider.university);
     _degreeController = TextEditingController(text: provider.degree);
@@ -83,7 +82,6 @@ class _EducationSheetState extends State<EducationSheet> {
                 shadowColor: primaryGreen.withOpacity(0.4),
               ),
               onPressed: () {
-                // تأكدي من إضافة هذه الدالة في ملف app_provider.dart
                 provider.updateEducation(
                   _uniController.text, 
                   _degreeController.text, 
@@ -92,7 +90,6 @@ class _EducationSheetState extends State<EducationSheet> {
                 
                 Navigator.pop(context);
                 
-                // تنبيه بسيط بنجاح الحفظ
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(widget.isAr ? "تم حفظ المؤهلات" : "Education saved"),
