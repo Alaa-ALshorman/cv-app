@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAWwn9xze0DM9utdzXVumCwU75QbyaEobo',
-    appId: '1:467506084437:android:1b3062968903b60ca872dc',
+    appId: '1:467506084437:android:bd1a663aebd1e605a872dc',
     messagingSenderId: '467506084437',
     projectId: 'cv-builder-app-a5893',
     storageBucket: 'cv-builder-app-a5893.firebasestorage.app',

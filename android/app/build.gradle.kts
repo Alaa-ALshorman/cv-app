@@ -1,5 +1,8 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -22,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.alaa.cv_app"
+        applicationId = "com.nextwave.cvbuilder"
         
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
