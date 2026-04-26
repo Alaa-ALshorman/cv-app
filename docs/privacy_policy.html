@@ -48,7 +48,7 @@
 
   <div class="summary" role="region" aria-label="Summary">
     <strong>Summary</strong>
-    We use your information to run the App (accounts, your CV content, optional profile photo). Some data is processed by Google Firebase. We do not sell your personal information. Contact us for privacy questions or deletion requests.
+    We use your information to run the App (accounts, your CV content, optional account profile photo). Some data is processed by Google Firebase. Optional &ldquo;Remember me&rdquo; stores your email on the device only. PDF export may load fonts over the internet (for example from Google Fonts). We do not sell your personal information. Contact us for privacy questions or deletion requests.
   </div>
 
   <h2>1. Who we are</h2>
@@ -60,8 +60,8 @@
 
   <h2>2. What the App does</h2>
   <p>
-    The App lets you create and edit a curriculum vitae (CV), preview it, and generate PDFs.
-    It may use a user account and can store CV data on your device for quick access.
+    The App lets you create, edit, and manage one or more CVs, preview them, and generate PDFs.
+    It may use a user account and stores CV data on your device for quick access.
   </p>
 
   <h2>3. Information we may process</h2>
@@ -73,10 +73,16 @@
       <strong>CV content you enter</strong> &mdash; For example your name, contact details, work history, education, and skills, so the App can show and export your CV.
     </li>
     <li>
-      <strong>Profile photo (optional)</strong> &mdash; If you add a photo, the file or a link to it may be stored using <strong>Google Firebase Storage</strong> and associated with your profile.
+      <strong>Account profile photo (optional)</strong> &mdash; If you add a photo in your account profile, the file may be stored using <strong>Google Firebase Storage</strong> and linked from your account (for example as a photo URL).
     </li>
     <li>
-      <strong>Data on your device</strong> &mdash; CV data may be stored locally (for example in app storage) to improve performance and usage without a network. It stays on the device unless a feature explicitly uploads it.
+      <strong>Images in your CV (optional)</strong> &mdash; A picture you attach to a CV is kept on your device as part of your CV data (for example as a local file path). Only the separate <strong>account profile photo</strong> flow uploads an image to Firebase Storage.
+    </li>
+    <li>
+      <strong>Remember me (optional)</strong> &mdash; If you enable it at sign-in, your email address may be saved on the device only (for example in app preferences) so the login form can be pre-filled. This is separate from sending credentials when you actually sign in.
+    </li>
+    <li>
+      <strong>Data on your device</strong> &mdash; CV data and related preferences may be stored locally (for example with app-managed storage such as <strong>SharedPreferences</strong>) so the App works offline where possible. It stays on the device unless a feature explicitly uploads it.
     </li>
   </ul>
 
@@ -88,8 +94,13 @@
 
   <h2>5. Service providers and locations</h2>
   <p>
-    We use service providers to host, authenticate, and store data, including <strong>Google Firebase</strong>.
-    They may process data in the United States and other countries where they operate.
+    We use service providers to host, authenticate, and store data. As of this policy date, the App uses <strong>Google Firebase Authentication</strong> and <strong>Google Firebase Storage</strong> for the features described above.
+    <strong>We do not use Firebase Cloud Firestore</strong> to store your CVs or similar content in the version of the App covered by this policy.
+    Providers may process data in the United States and other countries where they operate.
+  </p>
+  <p>
+    When you export a PDF, the App may download font files over the internet (for example via <strong>Google Fonts</strong> or infrastructure used by our PDF libraries) so text and Arabic script render correctly.
+    Those requests are handled by the relevant provider under its own terms and privacy notices; they are not used by us to identify you beyond standard network operations.
   </p>
 
   <h2>6. How long we keep data</h2>

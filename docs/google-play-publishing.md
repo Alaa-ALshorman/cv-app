@@ -37,7 +37,7 @@ Use this for **Data safety**, **content rating**, and support — keep it aligne
 |------|----------------|
 | **Account** | Email/password via **Firebase Auth**; password reset by email. |
 | **Network** | **INTERNET** in `android/app/src/main/AndroidManifest.xml` (required for release). |
-| **Local** | **SharedPreferences** — CV data on device (`app_provider.dart`). |
+| **Local** | **SharedPreferences** — serialized CVs (`all_cvs_v2`), optional **Remember me** email (`login_saved_email` / `login_remember_me` in `login_screen.dart`), and similar preferences. |
 | **Optional** | Profile name/photo; photo may go to **Firebase Storage** and `photoURL` on the user. |
 | **PDF** | `pdf` + `printing` (preview/print; fonts may load as part of the library). |
 | **Firestore** | Listed in `pubspec.yaml` but **not used in `lib/`** — remove later if unused; do not claim Firestore in Data safety if you do not use it. |
